@@ -1,0 +1,1032 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>彩虹留言板 · Rainbow Board</title>
+<link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Bricolage+Grotesque:wght@400;600;700&family=Noto+Sans+TC:wght@400;700;900&family=Caveat:wght@500;700&family=DM+Mono&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --pr:#E40303;--po:#FF8C00;--py:#FFED00;--pg:#008026;--pb:#004DFF;--pv:#750787;
+  --tb:#5BCEFA;--tp:#F5A9B8;
+  --bp:#D60270;--bpu:#9B4F96;--bbl:#0038A8;
+  --td:#17100a;--tm:#4a3828;--tl:#8a705a;--acc:#e8c87a;
+  --nc0:#fefaef;--nc1:#fde9ef;--nc2:#e8f3fc;--nc3:#e8f6ee;
+  --nc4:#f1eafe;--nc5:#fef2e2;--nc6:#fde4e4;--nc7:#e2f5f6;
+}
+
+body::before{content:'';display:block;height:5px;width:100%;position:fixed;top:0;left:0;z-index:9999;background:linear-gradient(90deg,var(--pr) 0% 16.6%,var(--po) 16.6% 33.3%,var(--py) 33.3% 50%,var(--pg) 50% 66.6%,var(--pb) 66.6% 83.3%,var(--pv) 83.3% 100%);}
+
+body{
+  font-family:'Bricolage Grotesque','Noto Sans TC',sans-serif;
+  background:
+    repeating-linear-gradient(128deg,
+      rgba(228,3,3,.11) 0px,rgba(228,3,3,.11) 36px,transparent 36px,transparent 70px,
+      rgba(255,140,0,.09) 70px,rgba(255,140,0,.09) 106px,transparent 106px,transparent 140px,
+      rgba(255,237,0,.08) 140px,rgba(255,237,0,.08) 176px,transparent 176px,transparent 210px,
+      rgba(0,128,38,.08) 210px,rgba(0,128,38,.08) 246px,transparent 246px,transparent 280px,
+      rgba(0,77,255,.09) 280px,rgba(0,77,255,.09) 316px,transparent 316px,transparent 350px,
+      rgba(117,7,135,.08) 350px,rgba(117,7,135,.08) 386px,transparent 386px,transparent 420px),
+    radial-gradient(ellipse 65% 50% at 6% 0%,rgba(255,205,110,.19) 0%,transparent 62%),
+    repeating-linear-gradient(89deg,transparent,transparent 3px,rgba(0,0,0,.022) 3px,rgba(0,0,0,.022) 6px),
+    repeating-linear-gradient(180deg,transparent,transparent 88px,rgba(0,0,0,.015) 88px,rgba(0,0,0,.015) 90px),
+    linear-gradient(155deg,#4a2510 0%,#2e1508 30%,#3c1c0b 60%,#261208 85%,#3a1a09 100%);
+  min-height:100vh;overflow-x:hidden;padding-top:5px;
+}
+
+/* ── TOPBAR ── */
+.topbar{
+  background:
+    repeating-linear-gradient(128deg,rgba(228,3,3,.07) 0px,rgba(228,3,3,.07) 26px,transparent 26px,transparent 54px,rgba(255,140,0,.05) 54px,rgba(255,140,0,.05) 80px,transparent 80px,transparent 108px,rgba(255,237,0,.05) 108px,rgba(255,237,0,.05) 134px,transparent 134px,transparent 162px,rgba(0,128,38,.05) 162px,rgba(0,128,38,.05) 188px,transparent 188px,transparent 216px,rgba(0,77,255,.06) 216px,rgba(0,77,255,.06) 242px,transparent 242px,transparent 270px,rgba(117,7,135,.05) 270px,rgba(117,7,135,.05) 296px,transparent 296px,transparent 324px),
+    radial-gradient(ellipse 70% 120% at 3% 50%,rgba(255,175,75,.12) 0%,transparent 50%),
+    rgba(11,5,1,.93);
+  backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,.05);
+  padding:10px 16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  box-shadow:inset 3px 0 0 rgba(91,206,250,.26),inset -3px 0 0 rgba(245,169,184,.26),0 4px 26px rgba(0,0,0,.5);
+}
+.logo-en{font-family:'Great Vibes',cursive;font-size:26px;font-weight:400;white-space:nowrap;flex-shrink:0;line-height:1;background:linear-gradient(135deg,var(--tp) 0%,var(--acc) 50%,var(--tb) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 14px rgba(232,200,122,.2));}
+.logo-zh{font-family:'Noto Sans TC',sans-serif;font-weight:900;font-size:15px;white-space:nowrap;flex-shrink:0;line-height:1;background:linear-gradient(135deg,var(--tp) 0%,var(--acc) 50%,var(--tb) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;display:none;}
+.logo-sub{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.13em;text-transform:uppercase;color:rgba(232,200,122,.34);white-space:nowrap;flex-shrink:0;margin-top:2px;}
+.bar-sep{width:1px;height:24px;background:rgba(255,255,255,.07);flex-shrink:0;}
+.search-wrap{flex:1;min-width:130px;position:relative;}
+.search-input{width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:999px;padding:7px 32px 7px 13px;color:rgba(255,255,255,.84);font-family:'Bricolage Grotesque',sans-serif;font-size:12px;outline:none;transition:border-color .2s,box-shadow .2s;}
+.search-input::placeholder{color:rgba(255,255,255,.24);}
+.search-input:focus{border-color:rgba(214,2,112,.5);box-shadow:0 0 0 3px rgba(214,2,112,.07);}
+.search-icon{position:absolute;right:11px;top:50%;transform:translateY(-50%);color:rgba(232,200,122,.36);font-size:12px;pointer-events:none;}
+.search-clear{position:absolute;right:9px;top:50%;transform:translateY(-50%);color:rgba(255,255,255,.3);font-size:12px;cursor:pointer;display:none;background:none;border:none;line-height:1;padding:2px;}
+.search-clear:hover{color:rgba(255,255,255,.65);}
+.lang-toggle{display:flex;gap:2px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.09);border-radius:8px;padding:3px;flex-shrink:0;}
+.lang-btn{padding:4px 12px;border-radius:5px;border:none;background:transparent;color:rgba(255,255,255,.34);font-family:'Bricolage Grotesque',sans-serif;font-size:11px;letter-spacing:.04em;cursor:pointer;transition:all .18s;}
+.lang-btn.active{background:rgba(232,200,122,.18);color:var(--acc);}
+
+/* ── DATE STRIP ── */
+.date-strip{background:radial-gradient(ellipse 50% 100% at 2% 50%,rgba(255,145,45,.08) 0%,transparent 50%),rgba(4,2,0,.94);backdrop-filter:blur(12px);border-bottom:1px solid rgba(255,255,255,.04);padding:6px 16px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.date-label{font-family:'DM Mono',monospace;font-size:10px;color:rgba(232,200,122,.42);letter-spacing:.1em;text-transform:uppercase;white-space:nowrap;}
+.date-field{position:relative;display:inline-flex;align-items:center;}
+.date-disp{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.09);border-radius:6px;padding:4px 24px 4px 8px;color:rgba(255,255,255,.62);font-family:'DM Mono',monospace;font-size:11px;white-space:nowrap;min-width:88px;pointer-events:none;}
+.date-field input[type=date]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;}
+.date-arrow{font-family:'DM Mono',monospace;font-size:10px;color:rgba(255,255,255,.18);}
+.btn-apply{padding:5px 12px;border-radius:6px;background:rgba(232,200,122,.11);border:1px solid rgba(232,200,122,.22);color:var(--acc);font-family:'Bricolage Grotesque',sans-serif;font-size:11px;cursor:pointer;transition:all .18s;}
+.btn-apply:hover{background:rgba(232,200,122,.21);}
+.btn-reset{padding:5px 9px;border-radius:6px;background:transparent;border:1px solid rgba(255,255,255,.07);color:rgba(255,255,255,.22);font-family:'Bricolage Grotesque',sans-serif;font-size:11px;cursor:pointer;transition:all .18s;}
+.btn-reset:hover{color:rgba(255,255,255,.5);}
+.result-count{margin-left:auto;font-family:'DM Mono',monospace;font-size:10px;color:rgba(232,200,122,.32);letter-spacing:.06em;white-space:nowrap;}
+
+/* ── BOARD ── */
+.board-wrap{padding:16px 14px 20px;max-width:1280px;width:100%;margin:0 auto;}
+.board{position:relative;display:flex;flex-direction:column;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.72' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0.25'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.28'/%3E%3C/svg%3E"),
+    radial-gradient(ellipse at 25% 15%,#d6aa5e 0%,#ba8a3a 35%,#a07030 65%,#8a5e22 100%);
+  border-radius:14px;box-shadow:inset 0 2px 10px rgba(0,0,0,.28),inset 0 -2px 10px rgba(0,0,0,.16),0 10px 50px rgba(0,0,0,.58);border:3px solid rgba(55,28,8,.85);overflow:hidden;}
+.board::before{content:'';position:absolute;top:0;left:0;bottom:0;width:7px;z-index:2;background:linear-gradient(180deg,var(--pr) 0% 14.2%,var(--po) 14.2% 28.5%,var(--py) 28.5% 42.8%,var(--pg) 42.8% 57.1%,var(--pb) 57.1% 71.4%,var(--pv) 71.4% 100%);border-radius:11px 0 0 11px;pointer-events:none;}
+.board::after{content:'';position:absolute;top:0;right:0;bottom:0;width:5px;z-index:2;background:linear-gradient(180deg,var(--tb) 0% 20%,var(--tp) 20% 40%,#fff 40% 60%,var(--tp) 60% 80%,var(--tb) 80% 100%);border-radius:0 11px 11px 0;pointer-events:none;}
+.board-inner{padding:14px 15px 15px 18px;display:flex;flex-direction:column;}
+.board-header{display:flex;align-items:center;gap:10px;margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid rgba(0,0,0,.12);flex-shrink:0;}
+.board-title{font-family:'Noto Sans TC',sans-serif;font-weight:900;font-size:16px;color:rgba(23,16,10,.62);letter-spacing:.01em;}
+/* Mobile: hide text, keep pin only */
+@media(max-width:480px){.board-title-text{display:none;}}
+.board-badge{background:rgba(0,0,0,.09);border-radius:999px;padding:2px 10px;font-family:'DM Mono',monospace;font-size:10px;color:rgba(23,16,10,.42);letter-spacing:.05em;}
+.board-hint{margin-left:auto;font-family:'DM Mono',monospace;font-size:9px;color:rgba(23,16,10,.24);letter-spacing:.06em;}
+@media(max-width:400px){.board-hint{display:none;}}
+
+/* Active filter bar */
+.active-filter-bar{display:none;align-items:center;gap:7px;background:rgba(214,2,112,.09);border:1px solid rgba(214,2,112,.20);border-radius:8px;padding:5px 10px;margin-bottom:9px;flex-shrink:0;}
+.active-filter-bar.show{display:flex;}
+.active-filter-label{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:rgba(214,2,112,.62);}
+.active-filter-tag{display:inline-flex;align-items:center;background:rgba(214,2,112,.12);border:1px solid rgba(214,2,112,.26);border-radius:999px;padding:2px 9px;font-family:'Bricolage Grotesque',sans-serif;font-size:11px;color:#D60270;}
+.active-filter-clear{background:none;border:none;color:rgba(214,2,112,.52);font-size:13px;cursor:pointer;line-height:1;padding:0;transition:color .18s;}
+.active-filter-clear:hover{color:#D60270;}
+
+/* Notes scroll — max ~3 rows */
+.notes-scroll{max-height:clamp(300px,42vh,540px);overflow-y:auto;overflow-x:hidden;padding-right:3px;scrollbar-width:thin;scrollbar-color:rgba(0,0,0,.2) transparent;}
+.notes-scroll::-webkit-scrollbar{width:5px;}
+.notes-scroll::-webkit-scrollbar-track{background:rgba(0,0,0,.06);border-radius:3px;}
+.notes-scroll::-webkit-scrollbar-thumb{background:rgba(0,0,0,.22);border-radius:3px;}
+.notes-scroll::-webkit-scrollbar-thumb:hover{background:rgba(0,0,0,.34);}
+
+/* Notes grid */
+.notes-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(138px,1fr));gap:11px;align-items:start;padding-bottom:8px;}
+@media(max-width:320px){.notes-grid{grid-template-columns:repeat(2,1fr);}}
+
+/* ── NOTE ── */
+.note{position:relative;cursor:pointer;transition:transform .2s ease,box-shadow .2s ease;}
+.note:hover{transform:scale(1.055) rotate(0deg)!important;z-index:20;box-shadow:0 14px 36px rgba(0,0,0,.40),0 4px 12px rgba(0,0,0,.22)!important;}
+.note-inner{border-radius:3px;padding:10px 10px 9px;position:relative;overflow:hidden;box-shadow:2px 4px 14px rgba(0,0,0,.24),0 1px 3px rgba(0,0,0,.13);}
+.note-inner::after{content:'';position:absolute;bottom:0;right:0;width:0;height:0;border-style:solid;border-width:0 0 11px 11px;border-color:transparent transparent rgba(0,0,0,.08) transparent;}
+.note-strip{position:absolute;top:0;left:0;right:0;height:3px;border-radius:3px 3px 0 0;}
+.pin{position:absolute;top:-9px;left:50%;transform:translateX(-50%);width:15px;height:15px;border-radius:50%;border:2px solid rgba(0,0,0,.20);box-shadow:0 2px 6px rgba(0,0,0,.32);z-index:2;}
+.new-badge{position:absolute;top:5px;right:7px;background:var(--bp);color:#fff;font-family:'DM Mono',monospace;font-size:7px;font-weight:700;letter-spacing:.08em;padding:1px 5px;border-radius:3px;box-shadow:0 1px 4px rgba(214,2,112,.38);z-index:3;animation:newPulse 2.4s ease-in-out infinite;}
+@keyframes newPulse{0%,100%{opacity:1;}50%{opacity:.6;}}
+
+/* Colors */
+.nc-0 .note-inner{background:var(--nc0);}.nc-1 .note-inner{background:var(--nc1);}
+.nc-2 .note-inner{background:var(--nc2);}.nc-3 .note-inner{background:var(--nc3);}
+.nc-4 .note-inner{background:var(--nc4);}.nc-5 .note-inner{background:var(--nc5);}
+.nc-6 .note-inner{background:var(--nc6);}.nc-7 .note-inner{background:var(--nc7);}
+.pc-0{background:#e53935;}.pc-1{background:#f57c00;}.pc-2{background:#fbc02d;}
+.pc-3{background:#388e3c;}.pc-4{background:#1976d2;}.pc-5{background:#7b1fa2;}
+.pc-6{background:#c2185b;}.pc-7{background:#00796b;}
+
+/* Note content */
+.note-sender{display:flex;align-items:center;gap:5px;margin-bottom:5px;margin-top:4px;}
+.note-avatar{width:17px;height:17px;border-radius:50%;font-size:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:rgba(0,0,0,.09);}
+.note-avatar.bl{filter:blur(3px);}
+.note-sender-name{font-family:'DM Mono',monospace;font-size:8px;color:var(--tl);letter-spacing:.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;}
+.note-date{font-family:'DM Mono',monospace;font-size:8px;color:var(--tl);opacity:.6;white-space:nowrap;flex-shrink:0;}
+.note-title{font-family:'Noto Sans TC',sans-serif;font-weight:700;font-size:12px;color:var(--td);line-height:1.4;margin-bottom:7px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;}
+.note-tags{display:flex;flex-wrap:wrap;gap:3px;margin-bottom:6px;}
+.ntag{display:inline-flex;align-items:center;padding:2px 7px;border-radius:999px;font-size:10px;font-family:'Bricolage Grotesque','Noto Sans TC',sans-serif;border:1px solid rgba(0,0,0,.1);background:rgba(0,0,0,.055);color:var(--tm);white-space:nowrap;line-height:1.6;cursor:pointer;transition:all .15s;}
+.ntag:hover{transform:scale(1.07);box-shadow:0 2px 6px rgba(0,0,0,.12);}
+.ntag.af{outline:2px solid var(--bp);outline-offset:1px;}
+.nt-f{background:rgba(56,142,60,.13);border-color:rgba(56,142,60,.26);color:#2e7d32;}
+.nt-e{background:rgba(25,118,210,.1);border-color:rgba(25,118,210,.22);color:#1565c0;}
+.nt-h{background:rgba(123,31,162,.09);border-color:rgba(123,31,162,.2);color:#6a1b9a;}
+.nt-m{background:rgba(211,47,47,.09);border-color:rgba(211,47,47,.2);color:#c62828;}
+.nt-t{background:rgba(0,151,167,.09);border-color:rgba(0,151,167,.2);color:#00697a;}
+.nt-a{background:rgba(230,81,0,.1);border-color:rgba(230,81,0,.22);color:#bf360c;}
+.nt-i{background:rgba(74,56,40,.09);border-color:rgba(74,56,40,.16);color:#4a3828;}
+.nt-o{background:rgba(49,27,146,.09);border-color:rgba(49,27,146,.2);color:#311b92;}
+.nt-pub{background:rgba(46,125,50,.12);border-color:rgba(46,125,50,.28);color:#1b5e20;}
+.nt-sen{background:rgba(245,124,0,.12);border-color:rgba(245,124,0,.28);color:#bf360c;}
+.nt-urg{background:rgba(198,40,40,.14);border-color:rgba(198,40,40,.33);color:#b71c1c;font-weight:700;}
+.nt-prv{background:rgba(55,55,55,.1);border-color:rgba(55,55,55,.2);color:#424242;}
+.note-link{display:inline-flex;align-items:center;font-family:'Bricolage Grotesque',sans-serif;font-size:10px;color:var(--bp);text-decoration:none;border:1px solid rgba(214,2,112,.22);border-radius:999px;padding:2px 7px;background:rgba(214,2,112,.07);transition:all .18s;position:relative;z-index:5;}
+.note-link:hover{background:rgba(214,2,112,.14);}
+.empty-state{text-align:center;padding:48px 20px;color:rgba(23,16,10,.34);font-family:'Noto Sans TC',sans-serif;font-weight:700;font-size:15px;display:none;grid-column:1/-1;}
+.hl{background:rgba(232,200,122,.55);border-radius:2px;padding:0 1px;}
+
+/* ── OVERLAY ── */
+.overlay{position:fixed;inset:0;background:rgba(6,3,1,.86);backdrop-filter:blur(14px);z-index:500;display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity .22s;}
+.overlay.open{opacity:1;pointer-events:all;}
+.exp-card{max-width:480px;width:100%;max-height:88vh;overflow-y:auto;border-radius:4px;padding:26px 22px;position:relative;transform:scale(.93) rotate(-.5deg);transition:transform .22s ease;box-shadow:0 36px 90px rgba(0,0,0,.75),0 8px 22px rgba(0,0,0,.4);}
+.overlay.open .exp-card{transform:scale(1) rotate(0deg);}
+.exp-rainbow{position:absolute;top:0;left:0;right:0;height:4px;border-radius:4px 4px 0 0;background:linear-gradient(90deg,var(--pr) 0%,var(--po) 20%,var(--py) 40%,var(--pg) 60%,var(--pb) 80%,var(--pv) 100%);}
+.exp-pin{position:absolute;top:-11px;left:50%;transform:translateX(-50%);width:19px;height:19px;border-radius:50%;border:2px solid rgba(0,0,0,.20);box-shadow:0 3px 8px rgba(0,0,0,.42);z-index:2;}
+.close-btn{position:absolute;top:12px;right:12px;width:28px;height:28px;border-radius:50%;background:rgba(0,0,0,.09);border:1px solid rgba(0,0,0,.13);color:var(--tl);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .18s;}
+.close-btn:hover{background:rgba(198,40,40,.13);color:#c62828;}
+.exp-sens{display:inline-flex;padding:3px 10px;border-radius:999px;font-size:11px;font-family:'Bricolage Grotesque',sans-serif;margin-bottom:9px;cursor:default;}
+.exp-title{font-family:'Noto Sans TC',sans-serif;font-weight:900;font-size:16px;color:var(--td);line-height:1.4;margin-bottom:11px;padding-right:32px;}
+.ai-box{background:rgba(0,0,0,.065);border-left:3px solid rgba(0,0,0,.13);border-radius:0 6px 6px 0;padding:10px 12px;margin-bottom:12px;}
+.ai-box-lbl{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--tl);margin-bottom:4px;}
+.ai-box-txt{font-family:'Noto Sans TC',sans-serif;font-size:12.5px;color:var(--td);line-height:1.85;}
+.exp-tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;}
+.exp-tags .ntag{font-size:11.5px;padding:3px 11px;cursor:pointer;}
+.exp-tags .ntag:hover{transform:scale(1.07);box-shadow:0 2px 6px rgba(0,0,0,.14);}
+.exp-meta{font-family:'DM Mono',monospace;font-size:9px;color:var(--tl);letter-spacing:.06em;margin-bottom:14px;}
+.exp-redir{display:flex;flex-direction:column;gap:7px;background:rgba(214,2,112,.07);border:1px solid rgba(214,2,112,.19);border-radius:10px;padding:13px 15px;}
+.exp-redir-lbl{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--bp);}
+.exp-redir-note{font-family:'Noto Sans TC',sans-serif;font-size:12px;color:var(--tm);line-height:1.75;}
+.exp-redir-btn{display:inline-flex;align-items:center;align-self:flex-start;background:var(--bp);color:#fff;border:none;border-radius:999px;padding:7px 16px;font-family:'Bricolage Grotesque',sans-serif;font-size:12px;font-weight:600;cursor:pointer;text-decoration:none;transition:all .18s;box-shadow:0 4px 14px rgba(214,2,112,.28);}
+.exp-redir-btn:hover{background:#b8015e;}
+
+/* ── FOOTER ── */
+.site-footer{background:rgba(4,2,0,.92);backdrop-filter:blur(12px);border-top:1px solid rgba(255,255,255,.05);}
+.footer-rainbow{display:flex;height:4px;}
+.flags-row{display:flex;align-items:flex-end;justify-content:center;gap:6px;padding:14px 16px 0;flex-wrap:wrap;}
+
+/* ── PIANO WAVE ANIMATION — hover only ── */
+@keyframes pianoKey{
+  0%,100%{transform:scaleY(1) translateY(0);filter:brightness(.82);opacity:.72;}
+  50%{transform:scaleY(1.24) translateY(-4px);filter:brightness(1.14);opacity:1;}
+}
+/* Default: still, slightly faded */
+.flag-mini{
+  display:flex;flex-direction:column;border-radius:3px;overflow:hidden;
+  transform-origin:bottom center;
+  opacity:.72;filter:brightness(.82);
+  transition:opacity .3s,filter .3s;
+}
+/* Hover on the row: trigger wave across all flags */
+.flags-row:hover .flag-mini{animation:pianoKey 3.0s ease-in-out infinite;}
+.flags-row:hover .flag-mini:nth-child(1) {animation-delay:0s;}
+.flags-row:hover .flag-mini:nth-child(2) {animation-delay:.22s;}
+.flags-row:hover .flag-mini:nth-child(3) {animation-delay:.44s;}
+.flags-row:hover .flag-mini:nth-child(4) {animation-delay:.66s;}
+.flags-row:hover .flag-mini:nth-child(5) {animation-delay:.88s;}
+.flags-row:hover .flag-mini:nth-child(6) {animation-delay:1.10s;}
+.flags-row:hover .flag-mini:nth-child(7) {animation-delay:1.32s;}
+.flags-row:hover .flag-mini:nth-child(8) {animation-delay:1.54s;}
+.flags-row:hover .flag-mini:nth-child(9) {animation-delay:1.76s;}
+.flags-row:hover .flag-mini:nth-child(10){animation-delay:1.98s;}
+.flags-row:hover .flag-mini:nth-child(11){animation-delay:2.20s;}
+
+.flag-mini.f-rainbow{width:26px;height:20px;}
+.flag-mini.f-trans,.flag-mini.f-bi,.flag-mini.f-lesbian{width:16px;height:18px;}
+.flag-mini.f-nb,.flag-mini.f-pan,.flag-mini.f-ace,.flag-mini.f-aro,.flag-mini.f-gf,.flag-mini.f-gq{width:14px;height:18px;}
+.flag-mini.f-bear{width:20px;height:18px;}
+.fs{flex:1;}
+
+/* Footer quote */
+.footer-quote{
+  text-align:center;padding:12px 24px 4px;
+  font-family:'Noto Sans TC',sans-serif;font-size:12px;
+  color:rgba(255,255,255,.42);letter-spacing:.04em;
+  font-style:italic;line-height:1.7;
+}
+.footer-quote cite{
+  display:block;margin-top:4px;
+  font-family:'DM Mono',monospace;font-size:9px;font-style:normal;
+  letter-spacing:.1em;text-transform:uppercase;
+  color:rgba(232,200,122,.38);
+}
+
+/* Ko-fi donation button */
+.kofi-btn{
+  display:inline-flex;align-items:center;gap:6px;margin-top:6px;
+  background:rgba(255,94,91,0.15);
+  border:1px solid rgba(255,94,91,0.35);
+  border-radius:999px;padding:5px 14px;
+  color:rgba(255,130,127,0.9);
+  font-family:'Bricolage Grotesque',sans-serif;font-size:11px;font-weight:600;
+  text-decoration:none;letter-spacing:0.04em;
+  transition:all 0.2s ease;
+  white-space:nowrap;
+}
+.kofi-btn:hover{
+  background:rgba(255,94,91,0.28);
+  border-color:rgba(255,94,91,0.6);
+  color:#ff817e;
+  transform:translateY(-1px);
+  box-shadow:0 4px 14px rgba(255,94,91,0.22);
+}
+.kofi-icon{font-size:13px;line-height:1;}
+
+.footer-inner{max-width:1280px;margin:0 auto;padding:0 16px;}
+.footer-content{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:11px 0 8px;}
+.footer-logo-en{font-family:'Great Vibes',cursive;font-size:17px;background:linear-gradient(135deg,var(--tp),var(--acc),var(--tb));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.footer-logo-zh{font-family:'Noto Sans TC',sans-serif;font-weight:900;font-size:12px;background:linear-gradient(135deg,var(--tp),var(--acc),var(--tb));-webkit-background-clip:text;-webkit-text-fill-color:transparent;display:none;}
+.footer-tagline{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:rgba(232,200,122,.26);margin-top:3px;}
+.footer-mid{display:flex;flex-direction:column;align-items:center;gap:4px;}
+.footer-madeby{display:flex;align-items:baseline;gap:6px;}
+.footer-madeby-label{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.18);}
+.footer-author{font-family:'Great Vibes',cursive;font-size:15px;color:rgba(232,200,122,.48);}
+.footer-right{text-align:right;}
+.footer-tm{display:inline-flex;align-items:flex-start;gap:1px;}
+.footer-tm-name{font-family:'Bricolage Grotesque',sans-serif;font-size:12px;font-weight:600;letter-spacing:.10em;color:rgba(255,255,255,.28);}
+.footer-tm-mark{font-family:'Bricolage Grotesque',sans-serif;font-size:8px;font-weight:600;color:rgba(255,255,255,.17);margin-top:2px;}
+.footer-year{font-family:'DM Mono',monospace;font-size:9px;color:rgba(255,255,255,.16);letter-spacing:.08em;margin-top:3px;}
+.footer-note{text-align:center;padding:7px 0 12px;font-family:'DM Mono',monospace;font-size:9px;color:rgba(255,255,255,.13);letter-spacing:.05em;border-top:1px solid rgba(255,255,255,.04);line-height:2;}
+@media(max-width:500px){.footer-content{flex-direction:column;align-items:center;text-align:center;gap:10px;}.footer-right{text-align:center;}}
+
+/* Note anim */
+@keyframes noteIn{from{opacity:0;transform:translateY(7px);}to{opacity:1;transform:translateY(0);}}
+.note{animation:noteIn .32s ease both;}
+
+/* ── DISCLAIMER BANNER ── */
+.disclaimer-bar{
+  background:rgba(232,200,122,0.07);
+  border-bottom:1px solid rgba(232,200,122,0.12);
+  padding:7px 18px;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  flex-wrap:wrap;
+}
+.disclaimer-bar-text{
+  font-family:'DM Mono',monospace;font-size:9.5px;
+  color:rgba(232,200,122,0.52);letter-spacing:0.04em;
+  text-align:center;line-height:1.7;
+}
+.disclaimer-bar-text a{
+  color:rgba(232,200,122,0.7);text-decoration:underline;
+  text-underline-offset:2px;cursor:pointer;
+}
+
+/* Disclaimer modal */
+.disc-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,0.75);
+  backdrop-filter:blur(8px);z-index:800;
+  display:flex;align-items:center;justify-content:center;
+  padding:20px;opacity:0;pointer-events:none;transition:opacity .22s;
+}
+.disc-overlay.open{opacity:1;pointer-events:all;}
+.disc-modal{
+  background:#1a1208;
+  border:1px solid rgba(232,200,122,0.2);
+  border-radius:14px;padding:28px 26px;
+  max-width:560px;width:100%;max-height:85vh;overflow-y:auto;
+  position:relative;
+  box-shadow:0 24px 60px rgba(0,0,0,0.6);
+}
+.disc-modal::-webkit-scrollbar{width:4px;}
+.disc-modal::-webkit-scrollbar-thumb{background:rgba(232,200,122,0.2);border-radius:2px;}
+.disc-close{
+  position:absolute;top:14px;right:14px;
+  width:28px;height:28px;border-radius:50%;
+  background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);
+  color:rgba(255,255,255,0.4);font-size:14px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;transition:all .18s;
+}
+.disc-close:hover{background:rgba(198,40,40,0.15);color:#f87171;}
+.disc-title{
+  font-family:'Noto Sans TC',sans-serif;font-weight:900;
+  font-size:15px;color:rgba(232,200,122,0.9);
+  margin-bottom:16px;padding-right:32px;letter-spacing:0.04em;
+}
+.disc-section{margin-bottom:14px;}
+.disc-section-title{
+  font-family:'DM Mono',monospace;font-size:9px;
+  letter-spacing:0.12em;text-transform:uppercase;
+  color:rgba(232,200,122,0.5);margin-bottom:6px;
+}
+.disc-body{
+  font-family:'Noto Sans TC',sans-serif;font-size:12px;
+  color:rgba(255,255,255,0.52);line-height:1.9;
+}
+.disc-body strong{color:rgba(255,255,255,0.72);font-weight:700;}
+.disc-divider{height:1px;background:rgba(255,255,255,0.06);margin:14px 0;}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div style="flex-shrink:0">
+    <div class="logo-en" id="logo-en">Rainbow Board</div>
+    <div class="logo-zh" id="logo-zh">彩虹留言板</div>
+    <div class="logo-sub" id="sub-label">Community Board</div>
+  </div>
+  <div class="bar-sep"></div>
+  <div class="search-wrap">
+    <input class="search-input" id="search-input" type="text" autocomplete="off">
+    <span class="search-icon" id="search-icon">🔍</span>
+    <button class="search-clear" id="search-clear">✕</button>
+  </div>
+  <div class="lang-toggle">
+    <button class="lang-btn active" id="btn-en">EN</button>
+    <button class="lang-btn" id="btn-zh">繁中</button>
+  </div>
+</div>
+
+<div class="date-strip">
+  <span class="date-label" id="lbl-date">Date Range</span>
+  <div class="date-field">
+    <span class="date-disp" id="disp-from">Feb 1, 2026</span>
+    <input type="date" id="date-from" value="2026-02-01">
+  </div>
+  <span class="date-arrow">→</span>
+  <div class="date-field">
+    <span class="date-disp" id="disp-to">May 1, 2026</span>
+    <input type="date" id="date-to" value="2026-05-01">
+  </div>
+  <button class="btn-apply" id="btn-filter">Filter</button>
+  <button class="btn-reset" id="btn-reset">Reset</button>
+  <span class="result-count" id="result-count">— notes</span>
+</div>
+
+<div class="board-wrap">
+  <div class="board">
+    <div class="board-inner">
+      <div class="board-header">
+        <span class="board-title">📌 <span class="board-title-text" id="board-title-text">Community Board</span></span>
+        <span class="board-badge" id="badge-count">—</span>
+        <span class="board-hint" id="board-hint">Tap tags to filter · Tap notes to expand</span>
+      </div>
+      <div class="active-filter-bar" id="active-filter-bar">
+        <span class="active-filter-label" id="lbl-filtering">Filtering</span>
+        <span class="active-filter-tag" id="af-display"></span>
+        <button class="active-filter-clear" id="af-clear">✕</button>
+      </div>
+      <div class="notes-scroll">
+        <div class="notes-grid" id="notes-grid"></div>
+        <div class="empty-state" id="empty-state">No matching posts 🌈</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer class="site-footer">
+  <div class="footer-rainbow">
+    <div style="background:var(--pr);flex:1"></div><div style="background:var(--po);flex:1"></div>
+    <div style="background:var(--py);flex:1"></div><div style="background:var(--pg);flex:1"></div>
+    <div style="background:var(--pb);flex:1"></div><div style="background:var(--pv);flex:1"></div>
+  </div>
+
+  <!-- 11 pride flags — piano wave animation -->
+  <div class="flags-row">
+    <div class="flag-mini f-rainbow" title="Rainbow Pride">
+      <div class="fs" style="background:#E40303"></div><div class="fs" style="background:#FF8C00"></div>
+      <div class="fs" style="background:#FFED00"></div><div class="fs" style="background:#008026"></div>
+      <div class="fs" style="background:#004DFF"></div><div class="fs" style="background:#750787"></div>
+    </div>
+    <div class="flag-mini f-trans" title="Transgender Pride">
+      <div class="fs" style="background:#5BCEFA"></div><div class="fs" style="background:#F5A9B8"></div>
+      <div class="fs" style="background:#fff"></div><div class="fs" style="background:#F5A9B8"></div>
+      <div class="fs" style="background:#5BCEFA"></div>
+    </div>
+    <div class="flag-mini f-bi" title="Bisexual Pride">
+      <div class="fs" style="background:#D60270;flex:2"></div>
+      <div class="fs" style="background:#9B4F96"></div>
+      <div class="fs" style="background:#0038A8;flex:2"></div>
+    </div>
+    <div class="flag-mini f-lesbian" title="Lesbian Pride">
+      <div class="fs" style="background:#D52D00"></div><div class="fs" style="background:#FF9A56"></div>
+      <div class="fs" style="background:#fff"></div><div class="fs" style="background:#D162A4"></div>
+      <div class="fs" style="background:#B55690"></div>
+    </div>
+    <div class="flag-mini f-nb" title="Non-Binary Pride">
+      <div class="fs" style="background:#FCF434"></div><div class="fs" style="background:#fff"></div>
+      <div class="fs" style="background:#9C59D1"></div><div class="fs" style="background:#2D2D2D"></div>
+    </div>
+    <div class="flag-mini f-pan" title="Pansexual Pride">
+      <div class="fs" style="background:#FF218C"></div><div class="fs" style="background:#FFD800"></div>
+      <div class="fs" style="background:#21B1FF"></div>
+    </div>
+    <div class="flag-mini f-ace" title="Asexual Pride">
+      <div class="fs" style="background:#1a1a1a"></div><div class="fs" style="background:#a3a3a3"></div>
+      <div class="fs" style="background:#fff"></div><div class="fs" style="background:#7B2F89"></div>
+    </div>
+    <div class="flag-mini f-aro" title="Aromantic Pride">
+      <div class="fs" style="background:#3D9A40"></div><div class="fs" style="background:#A8D277"></div>
+      <div class="fs" style="background:#fff"></div><div class="fs" style="background:#a3a3a3"></div>
+      <div class="fs" style="background:#1a1a1a"></div>
+    </div>
+    <div class="flag-mini f-gf" title="Genderfluid Pride">
+      <div class="fs" style="background:#FF76A4"></div><div class="fs" style="background:#fff"></div>
+      <div class="fs" style="background:#BE18D6"></div><div class="fs" style="background:#1a1a1a"></div>
+      <div class="fs" style="background:#333EBC"></div>
+    </div>
+    <div class="flag-mini f-gq" title="Genderqueer Pride">
+      <div class="fs" style="background:#B57EDC"></div><div class="fs" style="background:#fff"></div>
+      <div class="fs" style="background:#4A8123"></div>
+    </div>
+    <div class="flag-mini f-bear" title="Bear Brotherhood">
+      <div class="fs" style="background:#623804"></div><div class="fs" style="background:#D56300"></div>
+      <div class="fs" style="background:#FEDD63"></div><div class="fs" style="background:#FEF9E5"></div>
+      <div class="fs" style="background:#fff"></div><div class="fs" style="background:#999"></div>
+      <div class="fs" style="background:#1a1a1a"></div>
+    </div>
+  </div>
+
+  <div class="footer-quote" id="footer-quote">
+    "Hope will never be silent."
+    <cite id="footer-cite">— Harvey Milk, 1978</cite>
+  </div>
+
+  <div class="footer-inner">
+    <div class="footer-content">
+      <div>
+        <div class="footer-logo-en" id="footer-logo-en">Rainbow Board</div>
+        <div class="footer-logo-zh" id="footer-logo-zh">彩虹留言板</div>
+        <div class="footer-tagline" id="footer-tagline">LGBTQ+ Community Mail Visualizer</div>
+      </div>
+      <div class="footer-mid">
+        <div class="footer-madeby">
+          <span class="footer-madeby-label" id="footer-made-label">Created by</span>
+          <span class="footer-author">XiaXia</span>
+        </div>
+        <!-- ☕ Ko-fi donation button — replace YOUR_KOFI_ID with your Ko-fi username -->
+        <a class="kofi-btn" id="kofi-btn"
+           href="https://ko-fi.com/chaosxxcinema"
+           target="_blank" rel="noopener">
+          <span class="kofi-icon">☕</span>
+          <span class="kofi-text" id="kofi-text">Buy me a coffee</span>
+        </a>
+      </div>
+      <div class="footer-right">
+        <div class="footer-tm"><span class="footer-tm-name">ChaosXX</span><sup class="footer-tm-mark">™</sup></div>
+        <div class="footer-year">© 2026</div>
+      </div>
+    </div>
+    <div class="footer-note" id="footer-note">
+      Summaries &amp; tags auto-extracted by <strong style="color:rgba(255,255,255,.22)">Gemini AI (Google)</strong> · Full content available in the original community mailing list
+    </div>
+    <div style="text-align:center;padding:6px 0 14px;">
+      <span id="disc-link"
+        onclick="document.getElementById('disc-overlay').classList.add('open')"
+        style="
+          display:inline-flex;align-items:center;gap:5px;
+          font-family:'Bricolage Grotesque',sans-serif;font-size:11px;font-weight:600;
+          color:rgba(232,200,122,0.75);
+          border:1px solid rgba(232,200,122,0.3);
+          border-radius:999px;padding:4px 14px;
+          cursor:pointer;letter-spacing:0.06em;
+          transition:all 0.18s;
+        "
+        onmouseover="this.style.background='rgba(232,200,122,0.12)';this.style.color='rgba(232,200,122,1)';this.style.borderColor='rgba(232,200,122,0.6)'"
+        onmouseout="this.style.background='transparent';this.style.color='rgba(232,200,122,0.75)';this.style.borderColor='rgba(232,200,122,0.3)'"
+      >⚠️ Disclaimer · 免責聲明</span>
+    </div>
+  </div>
+</footer>
+
+<!-- ── DISCLAIMER MODAL ── -->
+<div class="disc-overlay" id="disc-overlay">
+  <div class="disc-modal">
+    <button class="disc-close" onclick="document.getElementById('disc-overlay').classList.remove('open')">✕</button>
+    <div class="disc-title" id="disc-title">⚠️ 免責聲明 · Disclaimer</div>
+
+    <div class="disc-section">
+      <div class="disc-section-title" id="disc-s1">關於本工具</div>
+      <div class="disc-body" id="disc-b1">
+        <strong>彩虹留言板（Rainbow Board）</strong> 是由獨立製作者 XiaXia（ChaosXX™）開發的社群輔助工具，
+        非任何 LGBTQ+ 組織的官方產品。本工具不以任何形式對郵件列表的內容負責，
+        所有原始郵件內容之著作權歸原發布者所有。
+      </div>
+    </div>
+
+    <div class="disc-divider"></div>
+
+    <div class="disc-section">
+      <div class="disc-section-title" id="disc-s2">AI 摘要說明</div>
+      <div class="disc-body" id="disc-b2">
+        本工具使用 <strong>Gemini AI（Google）</strong> 自動提煉郵件摘要與關鍵標籤。
+        AI 生成內容可能存在誤差，不構成任何法律、醫療或心理諮詢意見。
+        所有摘要僅供快速瀏覽參考，<strong>完整原文以郵件列表原文為準</strong>。
+      </div>
+    </div>
+
+    <div class="disc-divider"></div>
+
+    <div class="disc-section">
+      <div class="disc-section-title" id="disc-s3">隱私與資料處理</div>
+      <div class="disc-body" id="disc-b3">
+        本工具不儲存訪客的任何個人資料，不使用 Cookie 追蹤，不向第三方出售任何資訊。
+        AI 摘要處理流程依照 Google Gemini API 服務條款進行，
+        標記為<strong>「敏感」「緊急」「隱私」</strong>的郵件不在公開版面顯示，
+        僅供已訂閱社群成員透過原始郵件列表查閱。
+      </div>
+    </div>
+
+    <div class="disc-divider"></div>
+
+    <div class="disc-section">
+      <div class="disc-section-title" id="disc-s4">使用者責任</div>
+      <div class="disc-body" id="disc-b4">
+        訪客使用本工具即表示了解本聲明。本工具不對因使用本平台資訊而造成的任何直接或間接損失承擔責任。
+        如發現任何內容侵害您的權益，請聯繫製作者要求移除。
+        <strong>緊急危機情況請直接聯繫專業支援機構，不要依賴本工具。</strong>
+      </div>
+    </div>
+
+    <div class="disc-divider"></div>
+
+    <div class="disc-section">
+      <div class="disc-section-title" id="disc-s5">維護者</div>
+      <div class="disc-body" id="disc-b5">
+        XiaXia · ChaosXX™ · © 2026 · 獨立製作，非商業公司<br>
+        <a href="mailto:chaosxxcinema@outlook.com"
+           style="color:rgba(232,200,122,0.7);text-decoration:underline;text-underline-offset:2px;">
+          聯繫製作者 → chaosxxcinema@outlook.com
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="exp-card" id="exp-card">
+    <div class="exp-rainbow"></div>
+    <div class="exp-pin" id="exp-pin"></div>
+    <button class="close-btn" id="close-btn">✕</button>
+    <div class="exp-sens ntag" id="exp-sens"></div>
+    <div class="exp-title" id="exp-title"></div>
+    <div class="ai-box">
+      <div class="ai-box-lbl" id="lbl-ai">✦ AI Summary</div>
+      <div class="ai-box-txt" id="exp-sum"></div>
+    </div>
+    <div class="exp-tags" id="exp-tags"></div>
+    <div class="exp-meta" id="exp-meta"></div>
+    <div class="exp-redir">
+      <div class="exp-redir-lbl" id="lbl-redir">Original Post</div>
+      <div class="exp-redir-note" id="exp-redir-note"></div>
+      <a class="exp-redir-btn" id="exp-redir-btn" href="https://groups.google.com/g/q-wave" target="_blank" rel="noopener">→ Go to Q-Wave Mailing List</a>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── CONSTANTS ──
+const QWAVE_URL='https://groups.google.com/g/your-community'; // ← 替換成實際郵件列表地址
+const TODAY='2026-05-01';
+const NEW_DAYS=45;
+const MN=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+function fmtDate(s){const[y,m,d]=s.split('-');return`${MN[+m-1]} ${+d}, ${y}`;}
+function isNew(d){return(new Date(TODAY)-new Date(d))/864e5<=NEW_DAYS;}
+
+const NOTE_BG=['#fefaef','#fde9ef','#e8f3fc','#e8f6ee','#f1eafe','#fef2e2','#fde4e4','#e2f5f6'];
+const PIN_BG=['#e53935','#f57c00','#fbc02d','#388e3c','#1976d2','#7b1fa2','#c2185b','#00796b'];
+
+const SENS={
+  public:{zh:'🌍 公開',en:'🌍 Public',cls:'nt-pub',strip:'linear-gradient(90deg,#388e3c,#66bb6a)',rn:{zh:'此郵件為社群公開資訊。請前往原始郵件列表查看原文及所有回覆。',en:'Public community info. Visit the original mailing list for the full thread.'}},
+  sensitive:{zh:'🔒 敏感',en:'🔒 Sensitive',cls:'nt-sen',strip:'linear-gradient(90deg,#f57c00,#ffb74d)',rn:{zh:'此郵件含有敏感內容，僅向已訂閱的社群成員顯示。',en:'Sensitive content — visible to subscribed members only.'}},
+  urgent:{zh:'🆘 緊急',en:'🆘 Urgent',cls:'nt-urg',strip:'linear-gradient(90deg,#c62828,#ef5350)',rn:{zh:'緊急求助訊息。組織者已收到通知。請前往郵件列表或直接聯繫社群支援小組。',en:'Urgent help request. Organizers notified. Visit the mailing list or contact community support directly.'}},
+  private:{zh:'🔐 隱私',en:'🔐 Private',cls:'nt-prv',strip:'linear-gradient(90deg,#424242,#757575)',rn:{zh:'此郵件含有個人隱私內容，僅限訂閱成員在郵件列表中查看。',en:'Private content — visible to subscribed members only.'}}
+};
+
+// ── TAG PRESETS ──
+const T={
+  free:{zh:'🆓 免費',en:'🆓 Free',c:'nt-f'},
+  event:{zh:'🗓 活動',en:'🗓 Event',c:'nt-e'},
+  online:{zh:'💻 線上',en:'💻 Online',c:'nt-o'},
+  monthly:{zh:'🗓 每月',en:'🗓 Monthly',c:'nt-e'},
+  weekly:{zh:'🔄 每週',en:'🔄 Weekly',c:'nt-e'},
+  social:{zh:'☕ 社交',en:'☕ Social',c:'nt-e'},
+  help:{zh:'🤝 尋求幫助',en:'🤝 Seeking Help',c:'nt-h'},
+  trans:{zh:'🏳️‍⚧️ 跨性別',en:'🏳️‍⚧️ Trans',c:'nt-t'},
+  medical:{zh:'💊 醫療',en:'💊 Medical',c:'nt-m'},
+  mental:{zh:'🧠 心理',en:'🧠 Mental Health',c:'nt-m'},
+  legal:{zh:'⚖️ 法律',en:'⚖️ Legal',c:'nt-i'},
+  housing:{zh:'🏘 住宿',en:'🏘 Housing',c:'nt-i'},
+  art:{zh:'🎨 創作',en:'🎨 Art',c:'nt-a'},
+  film:{zh:'🎬 影像',en:'🎬 Film',c:'nt-a'},
+  urgent:{zh:'🆘 緊急',en:'🆘 Urgent',c:'nt-urg'},
+  zh:{zh:'🈳 中文',en:'🈳 Chinese',c:'nt-f'},
+  imm:{zh:'🌏 移民',en:'🌏 Immigration',c:'nt-i'},
+  pride:{zh:'🏳️‍🌈 驕傲',en:'🏳️‍🌈 Pride',c:'nt-e'},
+  youth:{zh:'🌱 青年',en:'🌱 Youth',c:'nt-i'},
+  safety:{zh:'🔒 數位安全',en:'🔒 Digital Safety',c:'nt-i'},
+  resource:{zh:'📋 資源',en:'📋 Resources',c:'nt-i'},
+  game:{zh:'🎲 桌遊',en:'🎲 Board Games',c:'nt-i'},
+  workshop:{zh:'🛠 工作坊',en:'🛠 Workshop',c:'nt-e'},
+  holiday:{zh:'🎄 假期',en:'🎄 Holiday',c:'nt-e'},
+};
+
+// ── SENDER PRESETS ──
+const S={
+  off:{zh:'Q-Wave 官方',en:'Q-Wave Official',av:'📡',bl:false},
+  hub:{zh:'彩虹社群中心',en:'Rainbow Hub',av:'🌈',bl:false},
+  th:{zh:'跨性別健康聯盟',en:'Trans Health Alliance',av:'🏥',bl:false},
+  an:{zh:'匿名成員',en:'Anonymous Member',av:'💬',bl:true},
+  art:{zh:'彩虹藝術工作室',en:'Queer Art Studio',av:'🎨',bl:false},
+  res:{zh:'Q-Wave 資源庫',en:'Q-Wave Resources',av:'📚',bl:false},
+  ns:{zh:'夜間支持小組',en:'Night Support Circle',av:'🌙',bl:false},
+  cns:{zh:'彩虹心理諮詢',en:'Rainbow Counseling',av:'🧠',bl:false},
+  leg:{zh:'跨性別法律援助',en:'Trans Legal Aid',av:'⚖️',bl:false},
+  tc:{zh:'彩虹科技社群',en:'Queer Tech',av:'💻',bl:false},
+  caf:{zh:'酷兒友善咖啡廳',en:'Queer Café',av:'☕',bl:false},
+  yth:{zh:'彩虹青年組',en:'Rainbow Youth',av:'🌱',bl:false},
+  urg:{zh:'匿名（緊急）',en:'Anonymous (Urgent)',av:'🆘',bl:true},
+  ev:{zh:'Q-Wave 活動組',en:'Q-Wave Events Team',av:'🎤',bl:false},
+};
+
+// ── EMAIL DATA ──
+// Format: [id, 'YYYY-MM-DD', colorIdx(0-7), pinIdx(0-7), rotation, 'sensitivity', [T.keys], senderKey, titleZh, titleEn, summaryZh, summaryEn]
+// Newest first (Apr 2026 → Jun 2025)
+const RAW=[
+// ── APRIL 2026 (10) ──
+[100,'2026-04-28',0,2,-2,'public',[T.film,T.free,T.event],'ev','【五月場次】酷兒短片放映＋導演映後談','[May Screening] Queer Short Films + Director Q&A','五月初舉辦年度酷兒短片放映，共七部本地作品，映後有三位導演參與對談，免費入場，限50人，需提前報名。','Annual queer short film screening in early May. Seven local films, followed by Q&A with three directors. Free entry, limited to 50 people — registration required.'],
+[99,'2026-04-24',3,3,1,'public',[T.mental,T.monthly,T.free],'cns','四月心理健康月：免費團體支持小組（最後場次）','April Mental Health Month: Final Free Group Session','四月最後一場免費線上團體支持小組，每組限8人，由持證心理師帶領，名額有限，優先接受首次參加者。','Last free online group support session of April. Limited to 8 per group, led by licensed therapist. Priority given to first-time participants.'],
+[98,'2026-04-20',1,6,2.2,'sensitive',[T.help,T.imm],'an','尋找中文友善的庇護申請法律援助','Looking for Chinese-Speaking Legal Aid for Asylum Application','成員正在申請庇護，英文有限，需要能以中文溝通的法律援助資源或義工律師推薦。','Member applying for asylum with limited English, seeking legal aid resources or volunteer lawyers who can communicate in Chinese.'],
+[97,'2026-04-17',7,7,-1.5,'public',[T.social,T.free,T.event],'caf','四月下午茶：「帶我認識今年加入的你」','April Tea: "Get to Know New Members"','每季一次的社群新成員輕鬆聚會，週六下午兩點在 Café Bloom，無需報名，歡迎獨自前來。','Quarterly casual meetup for new community members. Saturday afternoon at Café Bloom. No registration needed, come alone is perfectly fine.'],
+[96,'2026-04-14',4,4,0.8,'public',[T.trans,T.medical,T.zh],'th','跨性別友善診所名單四月更新（附中文）','April Trans-Friendly Clinic List Update (Chinese incl.)','本月新增三間友善診所及一位非二元友善心理師，附費用說明，提供完整中文版本，以附件形式發送。','Three new friendly clinics and one non-binary-affirming therapist added this month. Fees included. Full Chinese version attached.'],
+[95,'2026-04-10',2,5,1.5,'public',[T.youth,T.workshop,T.free],'yth','青年小組四月工作坊：「我的故事，我的方式」說故事工作坊','Youth Group April Workshop: "My Story, My Way" Storytelling','彩虹青年組舉辦說故事工作坊，歡迎25歲以下的社群成員，探索用各種方式說出屬於自己的故事，免費，需報名。','Storytelling workshop for community members under 25, exploring different ways to tell your own story. Free, registration required.'],
+[94,'2026-04-07',5,1,-2.5,'public',[T.art,T.monthly,T.free],'art','四月創作夜：拼貼旗幟——你的身份，你的色彩','April Creative Night: Collage Flags — Your Identity, Your Colours','每月創作夜四月場次，主題為拼貼藝術，用雜誌、布料、彩紙拼出屬於自己的旗幟，材料全提供，免費。','Monthly creative night in April. Theme: collage art. Create your own flag from magazines, fabric, and coloured paper. All materials provided, free.'],
+[93,'2026-04-03',6,0,1,'public',[T.mental,T.online,T.weekly],'ns','深夜傾訴空間：四月第一週摘要','Late-Night Circle: April Week 1 Summary','每週三晚11點線上匿名傾訴小組持續開放，四月第一週有18人參與，Zoom 連結請私訊索取。','Weekly anonymous online sharing circle continues every Wednesday at 11PM. 18 participants in week 1 of April. DM to request the Zoom link.'],
+[92,'2026-04-01',0,3,2,'public',[T.legal,T.resource,T.zh],'res','2026 第二季法律資源更新（中英雙語）','Q2 2026 Legal Resource Update (Bilingual)','整理本季最新法律資源，涵蓋庇護申請、性別更改法規更新，附中英雙語版本，免費下載。','Updated legal resources for this quarter: asylum applications and gender marker regulation changes. Bilingual Chinese-English version, free to download.'],
+[91,'2026-04-01',3,2,-1,'public',[T.game,T.monthly,T.free],'hub','四月桌遊之夜 — 週六見！','April Board Game Night — See You Saturday!','四月桌遊之夜定於本月第三週週六晚上7點，彩虹社群中心大廳，30款以上桌遊，免費，無需報名。','April board game night: third Saturday of the month, 7PM at Rainbow Hub main hall. 30+ games, free, no registration needed.'],
+
+// ── MARCH 2026 (9) ──
+[90,'2026-03-28',4,6,0.5,'urgent',[T.urgent,T.help],'urg','緊急：需要今晚的安全落腳處（第二次求助）','Urgent: Need Safe Shelter Tonight (Second Request)','成員今晚被家人驅逐，身上有手機和少量現金，急需緊急安置資源或今晚可聯繫的支援組織。組織者已收到通知。','Member forced to leave home tonight with phone and little cash. Urgently needs emergency shelter or support organization contacts. Organizers have been notified.'],
+[89,'2026-03-22',1,5,2,'sensitive',[T.help,T.housing,T.zh],'an','找房難：酷兒友善的合租平台有哪些？','Apartment Hunting: Any Queer-Friendly Co-Living Platforms?','成員在找房，希望合租環境對酷兒身份友善，歡迎有經驗的成員推薦平台、Facebook社團或其他管道。','Member apartment hunting, looking for queer-friendly co-living. Welcomes platform, Facebook group, or other channel recommendations from experienced members.'],
+[88,'2026-03-19',7,7,-1.2,'public',[T.trans,T.legal,T.free],'leg','三月跨性別友善法律諮詢開放預約','March Trans-Friendly Legal Consultations Open','本月提供免費一對一法律諮詢，涵蓋性別標記更改申請、工作場所保護條款，限額25名，需提前預約。','Free one-on-one legal consultations available this month. Covers gender marker changes and workplace protection clauses. Limited to 25 spots, advance booking required.'],
+[87,'2026-03-15',2,4,1.8,'public',[T.film,T.free,T.event],'ev','春季酷兒電影放映：三部長片與映後談','Spring Queer Film Screening: Three Features + Discussion','三部涵蓋不同文化背景的酷兒長片，免費放映，映後有學術討論，提供中文字幕選項。','Three queer feature films from different cultural contexts. Free screening, followed by academic discussion. Chinese subtitle option available.'],
+[86,'2026-03-08',3,3,-0.5,'public',[T.event,T.online,T.free],'ev','婦女節線上論壇：LGBTQ+ 女性的身體自主與醫療體驗','Women\'s Day Forum: Bodily Autonomy & Healthcare for LGBTQ+ Women','婦女節特別線上論壇，四位 LGBTQ+ 女性和非二元成員分享在醫療體系中的親身經歷，免費報名。','Special Women\'s Day online forum. Four LGBTQ+ women and non-binary members share healthcare experiences. Free registration.'],
+[85,'2026-03-05',6,1,2.5,'public',[T.mental,T.monthly,T.free],'cns','三月免費心理支持小組開放報名','March Free Mental Health Support Group — Registration Open','三月提供兩場免費線上團體支持小組，每組限8人，由持證心理師帶領，中文進行，歡迎所有認同的成員報名。','Two free online group support sessions in March. Limited to 8 per group, led by licensed therapists, conducted in Chinese.'],
+[84,'2026-03-01',5,0,-2,'public',[T.art,T.monthly,T.free],'art','三月創作夜：「給未來的自己」信件藝術','March Creative Night: Letter Art "To My Future Self"','每月創作夜三月場次，主題為書信藝術，用水彩、手寫和拼貼寫一封給未來自己的信，免費，材料提供。','Monthly creative night. Theme: letter art — write a letter to your future self with watercolor, handwriting, and collage. Free, materials provided.'],
+[83,'2026-03-01',0,2,1,'public',[T.mental,T.online,T.weekly],'ns','深夜傾訴空間：三月每週三持續開放','Late-Night Circle: March — Every Wednesday','每週三晚11點線上匿名傾訴空間三月繼續開放，不評判，不錄音，Zoom 連結請私訊索取。','Anonymous online sharing circle continues every Wednesday at 11PM in March. Non-judgmental, not recorded. DM for the Zoom link.'],
+[82,'2026-03-01',3,3,-1.8,'public',[T.game,T.monthly,T.free],'hub','三月桌遊之夜 — 月度提醒','March Board Game Night — Monthly Reminder','三月桌遊之夜定於本月第三週週六，彩虹社群中心大廳，免費，不需報名，30款以上遊戲。','March board game night: third Saturday of the month, Rainbow Hub main hall. Free, no registration, 30+ games.'],
+
+// ── FEBRUARY 2026 (9) ──
+[81,'2026-02-24',1,5,1.2,'public',[T.youth,T.free,T.online],'yth','青年小組二月線上聚會：「我和家人之間」','Youth Group Feb Online: "Between Me and My Family"','彩虹青年組二月線上聚會，主題為家庭關係，歡迎25歲以下成員分享和聆聽，免費，匿名可選。','Rainbow Youth Group February online meetup. Theme: family relationships. Open to members under 25. Free, anonymous option available.'],
+[80,'2026-02-20',7,7,-1,'public',[T.safety,T.online,T.free],'tc','數位隱私工作坊：手機與社群媒體安全設定','Digital Privacy Workshop: Phone & Social Media Safety Settings','針對 LGBTQ+ 成員的數位安全工作坊，實際操作手機隱私設定、加密通訊工具，免費，需報名。','Digital safety workshop for LGBTQ+ members. Hands-on session covering phone privacy settings and encrypted messaging tools. Free, registration required.'],
+[79,'2026-02-16',2,4,0.8,'public',[T.legal,T.resource,T.zh],'res','二月法律資源：家庭暴力及緊急庇護中文指南','Feb Legal Resource: Domestic Violence & Emergency Shelter Chinese Guide','整理針對 LGBTQ+ 成員的家暴及緊急庇護資源，附中文說明，免費下載，歡迎轉發給需要的人。','Compiled DV and emergency shelter resources for LGBTQ+ members, with Chinese explanations. Free to download and share.'],
+[78,'2026-02-12',4,6,2,'public',[T.social,T.free,T.event],'hub','情人節特別聚會：給不想一個人過節的你','Valentine\'s Special Gathering: For Those Who Don\'t Want to Be Alone','情人節前夕的輕鬆聚會，不論感情狀態，歡迎所有人，提供甜點，有桌遊，免費，直接來就好。','Pre-Valentine casual gathering. All relationship statuses welcome. Snacks provided, board games available. Free, just show up.'],
+[77,'2026-02-10',5,1,-1.5,'sensitive',[T.help,T.mental],'an','情人節前：家人不接受我的關係，有人有過來人經驗嗎？','Before Valentine\'s: Family Won\'t Accept My Relationship — Anyone Been Through This?','成員的家人無法接受其同性伴侶關係，在情人節前感到孤立，希望聽到有類似經歷的人的分享與建議。','Member\'s family cannot accept their same-sex relationship. Feeling isolated before Valentine\'s Day. Seeking shared experiences and advice from the community.'],
+[76,'2026-02-06',0,3,1.8,'public',[T.mental,T.online,T.weekly],'ns','深夜傾訴空間：二月每週三持續開放','Late-Night Circle: February — Every Wednesday','每週三晚11點線上匿名傾訴空間二月繼續開放，Zoom 連結請私訊索取。','Anonymous online sharing circle continues every Wednesday at 11PM in February. DM for the Zoom link.'],
+[75,'2026-02-05',3,2,-2,'public',[T.mental,T.monthly,T.free],'cns','二月心理支持小組：日期確認','February Mental Health Group: Dates Confirmed','二月兩場免費線上心理支持小組日期已確認，分別在2月10日和17日晚8點，每組限8人。','Two free online mental health group sessions in February confirmed: Feb 10 and 17 at 8PM. Limited to 8 per group.'],
+[74,'2026-02-01',6,0,0.5,'public',[T.art,T.monthly,T.free],'art','二月創作夜：情書與手繪——寫給自己的愛','Feb Creative Night: Love Letters & Hand-Drawn Art','每月創作夜二月場次，主題為情書與自愛，手繪明信片和手寫信，材料全提供，免費，不需要繪畫基礎。','Monthly creative night in February. Theme: love letters and self-love. Hand-drawn postcards and handwritten notes. Materials provided, free, no art experience needed.'],
+[73,'2026-02-01',3,3,1,'public',[T.game,T.monthly,T.free],'hub','二月桌遊之夜 — 月度提醒','February Board Game Night — Monthly Reminder','二月桌遊之夜定於本月第三週週六，地點彩虹社群中心大廳，免費，無需報名。','February board game night: third Saturday, Rainbow Hub main hall. Free, no registration needed.'],
+
+// ── JANUARY 2026 (9) ──
+[72,'2026-01-27',4,5,2.2,'urgent',[T.urgent,T.housing],'urg','緊急：今晚需要安全住所，被室友驅逐','Urgent: Need Safe Housing Tonight, Evicted by Roommate','成員因室友發現其身份而被緊急驅逐，目前在附近咖啡廳，需要今晚緊急安置協助。組織者已收到通知。','Member urgently evicted by roommate after identity was discovered. Currently at a nearby café. Needs emergency shelter tonight. Organizers have been notified.'],
+[71,'2026-01-24',1,4,-1,'public',[T.trans,T.medical,T.zh],'th','一月跨性別醫療資源更新（含新年保險指南）','January Trans Medical Update (incl. New Year Insurance Guide)','新年起生效的醫療保險政策對跨性別成員的影響整理，附新友善診所資訊，提供中文說明。','Summary of new year health insurance policy changes affecting trans members. New friendly clinic listings included. Chinese explanation available.'],
+[70,'2026-01-20',2,3,-0.8,'public',[T.social,T.free,T.event],'caf','一月社群茶會：「迎接2026，分享你的新年計畫」','January Social Tea: "Welcome 2026 — Share Your Plans"','新年第一個月社群聚會，輕鬆聊聊對2026年的期望，週六下午兩點，Café Bloom，無需報名。','First community gathering of the new year. Casual chat about hopes for 2026. Saturday afternoon, Café Bloom. No registration needed.'],
+[69,'2026-01-15',0,2,1.5,'public',[T.legal,T.resource,T.zh],'res','2026 年初資源更新：新法規下的 LGBTQ+ 權利指南','2026 Resource Update: LGBTQ+ Rights Under New Regulations','針對新年起生效的政策變化，整理了對 LGBTQ+ 成員影響最大的法規更新摘要，附中英雙語版本，免費下載。','Summary of policy changes effective from new year affecting LGBTQ+ members most. Bilingual Chinese-English version, free to download.'],
+[68,'2026-01-12',5,0,-2.5,'public',[T.art,T.monthly,T.free],'art','一月創作夜：「2026年我想成為的模樣」拼貼畫','Jan Creative Night: "Who I Want to Be in 2026" Collage','一月創作夜主題為新年展望，用拼貼方式呈現對新一年自己的想像，材料全提供，免費。','January creative night: new year vision board using collage. All materials provided. Free.'],
+[67,'2026-01-10',6,7,1,'public',[T.mental,T.online,T.weekly],'ns','深夜傾訴空間：一月每週三持續開放','Late-Night Circle: January — Every Wednesday','每週三晚11點線上匿名傾訴空間一月繼續開放。如果新年讓你感到壓力，這裡是你的空間。Zoom 連結私訊索取。','Anonymous online sharing circle continues every Wednesday at 11PM in January. If the new year feels heavy, this space is yours. DM for Zoom link.'],
+[66,'2026-01-08',3,3,-1,'public',[T.mental,T.monthly,T.free],'cns','一月心理支持小組：新年第一批名額開放','January Mental Health Group: First Slots of the New Year Open','一月免費線上心理支持小組名額開放，兩場，每組8人上限，適合度過困難假期的人，歡迎報名。','January free online mental health group slots open. Two sessions, 8 per group. Especially welcome to those who had a difficult holiday period.'],
+[65,'2026-01-04',7,1,2,'public',[T.game,T.monthly,T.free],'hub','一月桌遊之夜：新年第一局！','January Board Game Night: First Game of the New Year!','新年第一個月桌遊之夜，同樣是第三週週六晚7點，歡迎帶著新年計畫來說說話，免費，無需報名。','First board game night of the new year. Third Saturday, 7PM. Bring your new year plans to share. Free, no registration.'],
+[64,'2026-01-02',2,6,-1.5,'public',[T.resource,T.zh,T.event],'off','2026 Q-Wave 年度計畫預告：今年我們打算做什麼','2026 Q-Wave Annual Plan Preview: What We\'re Planning This Year','Q-Wave 官方分享2026年社群活動計畫，包括新增的法律支援、心理健康、青年項目，以及預定的大型活動時間表。','Q-Wave official shares the 2026 community activity plan, including new legal support, mental health, and youth programs, plus major event schedule.'],
+
+// ── DECEMBER 2025 (9) ──
+[63,'2025-12-28',0,3,1,'public',[T.art,T.event,T.free],'ev','2025 年末社群作品展：「你們讓這一年有了意義」','2025 Year-End Community Art Show: "You Made This Year Matter"','由社群成員共同參與的年度小型作品展，展示2025年創作夜的作品，附茶點，免費，歡迎帶家人或支持者一起來。','Annual small community art show featuring works from 2025 creative nights. Tea and snacks provided. Free. Welcome to bring supportive family or friends.'],
+[62,'2025-12-24',5,6,2.2,'sensitive',[T.help,T.mental],'an','聖誕夜求助：家人發現了，我不知道怎麼辦','Christmas Eve Help: Family Found Out, I Don\'t Know What to Do','成員聖誕夜被家人發現，正在處理情緒，希望有人能在線聆聽或給予建議，不需要緊急安置。','Member\'s family found out on Christmas Eve. Processing the situation emotionally. Looking for someone online to listen or advise. No emergency shelter needed.'],
+[61,'2025-12-20',1,4,-2,'public',[T.holiday,T.social,T.free],'hub','年末聚會：給沒有地方慶祝的你','Year-End Gathering: For Those With Nowhere to Celebrate','年末假期聚會，為無法或不願與家人共度的成員提供一個溫暖的地方，提供餐點，有安靜空間，免費。','Year-end gathering for members who cannot or choose not to celebrate with family. Warm space with food provided and a quiet room available. Free.'],
+[60,'2025-12-18',3,2,1,'public',[T.resource,T.zh,T.free],'res','2025 年度資源彙整：全年可用的社群資源清單','2025 Annual Resource Compilation: All Year Community Resource List','整理2025年全年累積的社群資源，包括醫療、法律、住宿、心理健康，以中英雙語附件形式發送，歡迎存檔。','Compiled all community resources accumulated throughout 2025: medical, legal, housing, mental health. Bilingual Chinese-English attachment. Save for reference.'],
+[59,'2025-12-14',6,0,-1.5,'public',[T.mental,T.online,T.weekly],'ns','深夜傾訴空間：十二月每週三，假期版本','Late-Night Circle: December — Holiday Edition Every Wednesday','每週三晚11點深夜傾訴空間十二月繼續，假期期間可能特別需要，我們都在這裡。Zoom 連結私訊索取。','Anonymous sharing circle continues every Wednesday at 11PM in December. The holiday season can be especially hard — we\'re here. DM for Zoom link.'],
+[58,'2025-12-10',4,5,2,'public',[T.mental,T.monthly,T.free],'cns','十二月心理支持：假期情緒專場','December Mental Health: Holiday Emotions Special Session','針對假期期間家庭壓力、孤立感的特別心理支持小組，兩場，每場限8人，線上，免費，有中文進行選項。','Special mental health support group focused on holiday-season family pressure and isolation. Two sessions, 8 per group, online, free. Chinese-language option available.'],
+[57,'2025-12-07',7,7,-1,'public',[T.art,T.monthly,T.free],'art','十二月創作夜：「給自己的年度禮物」——手工書製作','Dec Creative Night: "A Gift to Myself" — Handmade Book','每月創作夜十二月場次，製作一本屬於自己的手工小書，記錄這一年，材料全提供，免費。','December monthly creative night: make a small handmade book recording your year. All materials provided, free.'],
+[56,'2025-12-04',2,1,1.5,'public',[T.game,T.monthly,T.free],'hub','十二月桌遊之夜：歡迎帶朋友來！','December Board Game Night: Bring a Friend!','十二月桌遊之夜，今年最後一次，歡迎帶朋友或新認識的人一起來，免費，第三週週六晚7點。','December board game night — last one of the year. Bring a friend or someone you just met. Free. Third Saturday, 7PM.'],
+[55,'2025-12-01',0,3,-2,'public',[T.resource,T.event,T.zh],'off','十二月社群通訊：年末回顧與感謝','December Community Newsletter: Year in Review & Gratitude','Q-Wave 官方發送年末通訊，回顧2025年的社群活動、感謝義工，以及預告2026年的新計畫，中英雙語。','Q-Wave official year-end newsletter: 2025 community highlights, volunteer appreciation, and preview of 2026 plans. Bilingual.'],
+
+// ── NOVEMBER 2025 (9) ──
+[54,'2025-11-28',3,2,1,'public',[T.event,T.free,T.social],'hub','十一月社群感恩日：小型茶點聚會','November Community Appreciation Day: Small Gathering','感謝所有在這一年中給予和接受幫助的成員，舉辦小型感謝聚會，茶點由義工準備，免費，歡迎所有人。','Appreciation gathering for all members who gave and received support this year. Snacks prepared by volunteers. Free, all welcome.'],
+[53,'2025-11-23',1,6,-1.5,'public',[T.art,T.monthly,T.free],'art','十一月創作夜：「黑暗中的光」——蠟燭繪畫','Nov Creative Night: "Light in the Dark" — Candle Painting','每月創作夜十一月場次，以蠟燭和水彩為媒材，探索在黑暗中尋找光的主題，材料提供，免費。','Monthly creative night in November. Medium: candles and watercolor. Theme: finding light in the dark. Materials provided, free.'],
+[52,'2025-11-20',7,7,2.5,'public',[T.trans,T.medical,T.zh],'th','跨性別紀念日：友善診所名單更新 + 免費篩檢資訊','Trans Day of Remembrance: Clinic List Update + Free Screening','本月更新跨性別友善診所名單，同時整合免費 HIV 篩檢資訊，全部附中文說明，以附件形式發送。','Updated trans-friendly clinic list this month, including free HIV screening info. Full Chinese version attached.'],
+[51,'2025-11-17',5,0,-2,'urgent',[T.urgent,T.mental],'urg','緊急：需要心理危機支援聯繫方式','Urgent: Need Mental Health Crisis Support Contacts','成員正在經歷心理危機，尋求即時支援聯繫資源。組織者已收到通知並介入協助。','Member experiencing a mental health crisis, seeking immediate support contacts. Organizers have been notified and are assisting.'],
+[50,'2025-11-13',2,4,1,'public',[T.trans,T.legal,T.free],'leg','跨性別日特別：免費法律諮詢開放（性別更改、庇護）','Trans Day Special: Free Legal Consultations (Gender Marker, Asylum)','跨性別紀念日當週提供免費一對一法律諮詢，涵蓋性別標記更改、庇護申請流程，限額25名。','Free one-on-one legal consultations during Trans Day week. Covers gender marker changes and asylum process. Limited to 25 spots.'],
+[49,'2025-11-08',4,5,2,'public',[T.mental,T.online,T.weekly],'ns','深夜傾訴空間：十一月每週三持續開放','Late-Night Circle: November — Every Wednesday','每週三晚11點，深夜傾訴空間十一月繼續，不評判，不錄音，Zoom 連結私訊索取。','Anonymous online sharing circle continues every Wednesday at 11PM in November. Non-judgmental, not recorded. DM for Zoom link.'],
+[48,'2025-11-05',6,2,-1.8,'public',[T.mental,T.monthly,T.free],'cns','十一月心理支持小組：報名開放','November Mental Health Support Group: Registration Open','十一月兩場免費線上心理支持小組，每場8人限額，由持證心理師帶領，中文進行。','Two free online mental health support groups in November. 8 per session, led by licensed therapist, conducted in Chinese.'],
+[47,'2025-11-02',0,1,1.2,'public',[T.game,T.monthly,T.free],'hub','十一月桌遊之夜 — 月度提醒','November Board Game Night — Monthly Reminder','十一月桌遊之夜定於本月第三週週六晚7點，彩虹社群中心大廳，免費，無需報名。','November board game night: third Saturday, 7PM, Rainbow Hub. Free, no registration.'],
+[46,'2025-11-01',3,3,-1,'public',[T.resource,T.medical,T.zh],'res','十一月 LGBTQ+ 健康月：免費醫療資源整合','November LGBTQ+ Health Month: Free Medical Resource Compilation','整理各類針對 LGBTQ+ 成員的免費醫療資源，涵蓋心理、生理、預防性健康，附中文說明。','Compiled free medical resources for LGBTQ+ members: mental, physical, and preventive health. Chinese explanations included.'],
+
+// ── OCTOBER 2025 (9) ──
+[45,'2025-10-28',1,4,2,'public',[T.art,T.monthly,T.free],'art','十月創作夜：「我的身份地圖」——概念藝術','October Creative Night: "My Identity Map" — Conceptual Art','每月創作夜十月場次，主題為視覺化自己的身份認同地圖，多種媒材可選，材料提供，免費。','October monthly creative night. Theme: visualizing your identity map. Multiple mediums available. Materials provided, free.'],
+[44,'2025-10-23',4,7,-1.5,'public',[T.social,T.free,T.holiday],'hub','萬聖節酷兒化妝派對：每個人都歡迎','Halloween Queer Costume Party: Everyone Welcome','萬聖節前夕舉辦酷兒友善化妝派對，無服裝要求，提供甜點，有安靜空間，免費，歡迎各種表達方式。','Pre-Halloween queer-friendly costume party. No dress code required. Snacks provided, quiet space available. Free. All forms of expression welcome.'],
+[43,'2025-10-18',7,0,1,'public',[T.trans,T.legal,T.free],'leg','跨性別日周：免費法律諮詢開放預約（性別變更、庇護）','Trans Day Week: Free Legal Consultations Open (Gender Marker, Asylum)','跨性別紀念日當週提供免費一對一法律諮詢，涵蓋性別標記更改、庇護申請流程，限額30名，需提前預約。','Free one-on-one legal consultations during Trans Day week. Limited to 30 spots, advance booking required.'],
+[42,'2025-10-14',2,6,-2,'public',[T.medical,T.free,T.zh],'th','十月 HIV 免費篩檢活動：時間與地點確認','October Free HIV Screening: Time and Location Confirmed','本月免費 HIV 篩檢活動時間地點確認，附預約流程說明，提供中文翻譯支援。','Free HIV screening event this month — time and location confirmed. Booking process explained. Chinese translation support available.'],
+[41,'2025-10-10',5,5,1.5,'public',[T.mental,T.monthly,T.free],'cns','十月心理支持小組：報名開放','October Mental Health Support Group: Registration Open','十月兩場免費線上心理支持小組，每場8人，由持證心理師帶領，中文進行。','Two free online mental health groups in October. 8 per session, licensed therapist, conducted in Chinese.'],
+[40,'2025-10-07',6,3,-1,'public',[T.mental,T.online,T.weekly],'ns','深夜傾訴空間：十月每週三持續開放','Late-Night Circle: October — Every Wednesday','每週三晚11點深夜傾訴空間十月繼續，Zoom 連結私訊索取。','Anonymous sharing circle every Wednesday at 11PM in October. DM for Zoom link.'],
+[39,'2025-10-04',3,1,2.5,'public',[T.imm,T.legal,T.zh],'res','最新：移民 LGBTQ+ 庇護申請流程中文更新版','Update: LGBTQ+ Asylum Application Process Chinese Version','根據最新法規更新整理的庇護申請流程說明，中文版，由義工律師審核，免費下載。','Updated asylum application process guide based on latest regulations. Chinese version, reviewed by volunteer lawyers. Free to download.'],
+[38,'2025-10-02',1,4,-2,'public',[T.art,T.monthly,T.free],'art','暫定：十月創作夜日期確認通知','Confirmed: October Creative Night Date','每月創作夜十月場次日期確認，本月主題和細節隨後公佈，請關注後續郵件。','October monthly creative night date confirmed. Theme and details to follow in subsequent emails.'],
+[37,'2025-10-01',0,3,1,'public',[T.game,T.monthly,T.free],'hub','十月桌遊之夜 — 月度提醒','October Board Game Night — Monthly Reminder','十月桌遊之夜，第三週週六晚7點，彩虹社群中心大廳，免費，無需報名。','October board game night: third Saturday, 7PM, Rainbow Hub. Free, no registration.'],
+
+// ── SEPTEMBER 2025 (9) ──
+[36,'2025-09-27',4,5,2,'urgent',[T.urgent,T.help,T.mental],'urg','緊急：需要即時陪伴，無法獨自度過今晚','Urgent: Need Immediate Companionship, Cannot Be Alone Tonight','成員正在度過情緒低谷，不需要安置，只需要有人在線上陪伴或說說話。組織者已收到通知。','Member going through an emotional low. Does not need shelter, just someone online to talk to or be present. Organizers have been notified.'],
+[35,'2025-09-22',2,7,-1,'public',[T.resource,T.zh,T.free],'off','Q-Wave 九月通訊：社群動態與活動預告','Q-Wave September Newsletter: Community Updates & Events','Q-Wave 九月通訊，整理本月活動、資源更新、義工招募及社群公告，中英雙語。','Q-Wave September newsletter: this month\'s events, resource updates, volunteer recruitment, and community announcements. Bilingual.'],
+[34,'2025-09-18',6,1,1.5,'public',[T.trans,T.legal,T.free],'leg','九月跨性別友善法律諮詢日','September Trans-Friendly Legal Consultation Day','本月安排一日法律諮詢活動，提供性別標記更改、庇護申請個案評估，免費，限額20人，需預約。','One-day legal consultation event this month: gender marker changes and asylum case assessments. Free, limited to 20 people, appointment required.'],
+[33,'2025-09-14',5,0,-2,'public',[T.social,T.free,T.event],'caf','九月社群茶會：新成員歡迎聚會','September Community Tea: New Member Welcome Gathering','每季一次的新成員歡迎聚會，週六下午兩點，Café Bloom，輕鬆聊天，無行程，歡迎一個人來。','Quarterly new member welcome gathering. Saturday afternoon at Café Bloom. Casual chat, no agenda. Come alone is great.'],
+[32,'2025-09-10',7,7,2.5,'public',[T.film,T.free,T.event],'ev','秋季酷兒影展：短片精選四部','Autumn Queer Film Festival: Four Short Film Selection','秋季酷兒短片精選放映，四部本地作品，主題涵蓋身份、愛與家庭，映後有討論環節，免費。','Autumn queer short film selection. Four local works on identity, love, and family. Post-screening discussion included. Free.'],
+[31,'2025-09-07',3,2,-1.5,'public',[T.mental,T.online,T.weekly],'ns','深夜傾訴空間：九月每週三持續開放','Late-Night Circle: September — Every Wednesday','每週三晚11點深夜傾訴空間繼續，九月也不例外，Zoom 連結私訊索取。','Anonymous sharing circle continues every Wednesday at 11PM in September. DM for Zoom link.'],
+[30,'2025-09-04',1,4,1,'public',[T.mental,T.monthly,T.free],'cns','九月心理支持小組：報名開放','September Mental Health Group: Registration Open','九月兩場免費線上心理支持小組，每場8人，持證心理師帶領，中文進行，歡迎報名。','Two free online mental health groups in September. 8 per session, licensed therapist, Chinese language. Registration welcome.'],
+[29,'2025-09-03',0,6,-2,'public',[T.art,T.monthly,T.free],'art','九月創作夜：「我的身份，我的色彩」主題繪畫','September Creative Night: "My Identity, My Colours" Painting','每月創作夜九月場次，主題為身份認同與自我表達，提供多種顏料和畫布，不限技巧，免費。','September monthly creative night. Theme: identity and self-expression. Multiple paints and canvases provided. No skill required. Free.'],
+[28,'2025-09-01',3,3,1,'public',[T.game,T.monthly,T.free],'hub','九月桌遊之夜 — 月度提醒','September Board Game Night — Monthly Reminder','九月桌遊之夜，第三週週六晚7點，彩虹社群中心大廳，免費，無需報名，直接來。','September board game night: third Saturday, 7PM, Rainbow Hub. Free, no registration, just show up.'],
+
+// ── AUGUST 2025 (9) ──
+[27,'2025-08-28',5,5,-1,'public',[T.legal,T.free,T.zh],'leg','八月法律義診：開放無預約問答環節','August Legal Clinic: Open Q&A No Appointment Needed','本月特別舉辦無需預約的線上法律問答，義工律師在線解答一般性法律問題，適合初步了解。','Special online legal Q&A this month — no appointment needed. Volunteer lawyers answer general legal questions. Good for initial understanding.'],
+[26,'2025-08-22',4,6,2,'sensitive',[T.help,T.imm,T.housing],'an','剛抵達，尋找短期住宿與社群聯繫','Just Arrived — Looking for Short-Term Housing & Community','新移民成員剛到城市，尋找酷兒友善的短期住宿選項，同時希望認識當地社群，語言以中文為主。','Newly arrived immigrant member seeking queer-friendly short-term housing and local community connections. Primarily Chinese-speaking.'],
+[25,'2025-08-18',2,4,-2,'public',[T.event,T.free,T.zh],'off','新成員歡迎信：加入 Q-Wave 郵件列表，接下來怎麼辦？','New Member Welcome: You Joined Q-Wave, What\'s Next?','給所有新加入郵件列表的成員的歡迎說明，包括如何使用郵件列表、可用資源、社群規範，附中文版。','Welcome guide for all new mailing list members: how to use the list, available resources, and community norms. Chinese version included.'],
+[24,'2025-08-14',7,0,1,'public',[T.social,T.free,T.event],'caf','八月暑末聚會：夏天還沒結束','August End-of-Summer Gathering: Summer\'s Not Over Yet','八月末的輕鬆戶外聚會，附近公園見，帶你喜歡的零食，免費，歡迎帶朋友。','Casual outdoor end-of-summer gathering at a nearby park. Bring your favorite snacks. Free, bring a friend.'],
+[23,'2025-08-10',6,2,-1.5,'public',[T.trans,T.medical,T.zh],'th','八月跨性別醫療資源更新','August Trans Medical Resource Update','本月更新跨性別友善診所名單，新增兩間接受新患者的診所，附費用說明和預約流程，中文版本。','Updated trans-friendly clinic list this month. Two new clinics accepting new patients. Fees and booking process included. Chinese version available.'],
+[22,'2025-08-07',1,5,2.2,'public',[T.mental,T.online,T.weekly],'ns','深夜傾訴空間：八月每週三持續開放','Late-Night Circle: August — Every Wednesday','每週三晚11點深夜傾訴空間繼續，包括整個八月，Zoom 連結私訊索取。','Anonymous sharing circle continues every Wednesday at 11PM throughout August. DM for Zoom link.'],
+[21,'2025-08-05',5,3,-1,'public',[T.mental,T.monthly,T.free],'cns','八月心理支持小組：名額開放','August Mental Health Group: Spots Available','八月兩場免費線上心理支持小組，每場8人，持證心理師帶領，中文進行，有意者盡早報名。','Two free online mental health groups in August. 8 per session, licensed therapist, Chinese language. Register early.'],
+[20,'2025-08-02',3,1,1.5,'public',[T.art,T.monthly,T.free],'art','八月創作夜：「身體與空間」行為藝術小展演','August Creative Night: "Body and Space" — Performance Art Mini-Show','每月創作夜八月場次，探索行為藝術與空間的關係，不需要舞台經驗，每人有5分鐘表達時間，免費。','August monthly creative night exploring performance art and space. No stage experience needed. 5 minutes each to express. Free.'],
+[19,'2025-08-01',0,3,-2.5,'public',[T.game,T.monthly,T.free],'hub','八月桌遊之夜 — 月度提醒','August Board Game Night — Monthly Reminder','八月桌遊之夜，第三週週六晚7點，彩虹社群中心大廳，免費，無需報名。','August board game night: third Saturday, 7PM, Rainbow Hub. Free, no registration.'],
+
+// ── JULY 2025 (9) ──
+[18,'2025-07-27',4,4,1,'urgent',[T.urgent,T.mental],'urg','緊急：心理崩潰中，需要有人陪伴','Urgent: Mental Health Crisis — Need Someone','成員深夜遭遇情緒危機，尋求即時的線上陪伴或危機熱線資源，不需要實體安置。組織者已收到通知。','Member experiencing a late-night emotional crisis. Seeking immediate online companionship or crisis hotline resources. No physical shelter needed. Organizers notified.'],
+[17,'2025-07-22',1,6,-1,'public',[T.youth,T.free,T.event],'yth','青年小組七月活動：「如果你認識更年輕的自己」','Youth Group July: "If You Met Your Younger Self"','彩虹青年組七月活動，25歲以下社群成員，主題為給年輕自己的話，線上或實體均可參加，免費。','Rainbow Youth Group July activity for members under 25. Theme: words to your younger self. Online or in-person. Free.'],
+[16,'2025-07-17',2,3,2,'sensitive',[T.help,T.imm,T.legal],'an','移民求助：有人了解台灣的庇護申請流程嗎？','Immigration Help: Does Anyone Know the Asylum Process Here?','成員考慮申請庇護，對流程完全陌生，希望有人可以分享親身經歷或推薦義工法律協助資源。','Member considering asylum application, completely unfamiliar with the process. Looking for someone to share first-hand experience or recommend volunteer legal aid.'],
+[15,'2025-07-13',5,0,-1.5,'public',[T.mental,T.online,T.weekly],'ns','深夜傾訴空間：七月每週三持續開放','Late-Night Circle: July — Every Wednesday','每週三晚11點深夜傾訴空間繼續，七月也是如此，Zoom 連結私訊索取。','Anonymous sharing circle every Wednesday at 11PM throughout July. DM for Zoom link.'],
+[14,'2025-07-10',6,7,1.5,'public',[T.film,T.free,T.event],'ev','夏季酷兒電影之夜：兩部長片','Summer Queer Film Night: Two Feature Films','夏季特別電影之夜，兩部酷兒主題長片，附中文字幕選項，映後有茶點和非正式討論，免費。','Special summer film night featuring two queer feature films. Chinese subtitle option. Post-screening snacks and informal discussion. Free.'],
+[13,'2025-07-08',7,1,-2,'public',[T.safety,T.online,T.free],'tc','線上工作坊：如何保護你的數位隱私與安全','Online Workshop: Protecting Your Digital Privacy & Safety','針對 LGBTQ+ 成員的數位安全工作坊，涵蓋加密通訊、匿名瀏覽、社群媒體隱私設定，免費，需報名。','Digital safety workshop for LGBTQ+ members. Covers encrypted messaging, anonymous browsing, and social media privacy. Free, registration required.'],
+[12,'2025-07-05',3,2,1,'public',[T.art,T.monthly,T.free],'art','七月創作夜：「夏天的顏色」水彩工作坊','July Creative Night: "Summer Colours" Watercolor Workshop','每月創作夜七月場次，以夏天的顏色和感受為主題，水彩入門工作坊，材料提供，免費，無需基礎。','July monthly creative night. Theme: summer colours and feelings. Beginner watercolor workshop. Materials provided, free, no experience needed.'],
+[11,'2025-07-03',1,4,-1,'public',[T.mental,T.monthly,T.free],'cns','七月心理支持小組：名額開放','July Mental Health Group: Registration Open','七月兩場免費線上心理支持小組，每場8人，持證心理師帶領，中文進行。','Two free online mental health groups in July. 8 per session, licensed therapist, Chinese language.'],
+[10,'2025-07-01',0,3,2,'public',[T.game,T.monthly,T.free],'hub','七月桌遊之夜 — 月度提醒','July Board Game Night — Monthly Reminder','七月桌遊之夜，第三週週六晚7點，彩虹社群中心大廳，免費，無需報名。','July board game night: third Saturday, 7PM, Rainbow Hub. Free, no registration.'],
+
+// ── JUNE 2025 (9) ──
+[9,'2025-06-28',3,3,-2,'public',[T.art,T.free,T.event],'ev','驕傲月閉幕：社群攝影展「我們的臉孔」','Pride Month Closing: Community Photo Exhibition "Our Faces"','驕傲月末期舉辦社群攝影小展，展出本月活動中的社群成員照片，附茶點，免費入場，歡迎帶朋友觀展。','Community photo exhibition at the close of Pride Month. Photos of community members from this month\'s events. Snacks provided. Free. Bring friends.'],
+[8,'2025-06-22',5,5,1.5,'public',[T.legal,T.free,T.zh],'res','驕傲月資源：免費下載移民 LGBTQ+ 法律權利中文指南','Pride Month Resource: Free Download LGBTQ+ Immigrant Legal Rights Guide (Chinese)','由義工律師與翻譯義工合作整理，涵蓋庇護申請、伴侶簽證、工作許可等常見問題，提供完整中文版本。','Created by volunteer lawyers and translators. Covers asylum, partner visas, and work permits. Full Chinese version available.'],
+[7,'2025-06-18',2,4,-1,'public',[T.trans,T.medical,T.zh],'th','驕傲月：跨性別友善醫療資源整理（六月版）','Pride Month: Trans-Friendly Medical Resources (June Edition)','驕傲月特別整理跨性別友善醫療資源，涵蓋心理、內分泌、基本照護，附中文說明，免費下載。','Pride Month special: trans-friendly medical resources covering mental, endocrine, and basic care. Chinese explanation included, free download.'],
+[6,'2025-06-15',6,7,2,'sensitive',[T.help,T.housing,T.imm],'an','求助：剛出櫃，家人反應激烈，需要短期住宿建議','Help: Just Came Out, Family Reacted Badly, Need Short-Term Housing Advice','成員剛剛對家人出櫃，家庭氣氛緊張，短期可能需要離家，希望有人提供過渡住宿建議或資源。','Member just came out to family with a difficult reaction. May need to leave home short-term. Seeking transitional housing advice or resources.'],
+[5,'2025-06-14',3,3,-2,'public',[T.pride,T.free,T.event],'off','【驕傲月】六月遊行集合資訊與安全指南','[Pride Month] June Parade Meetup Info & Safety Guide','六月驕傲遊行集合點、時間、安全注意事項，以及事後社群慶祝聚會地點，附中文版路線圖。','Pride parade meetup point, time, safety tips, and post-parade community celebration venue. Chinese route map included.'],
+[4,'2025-06-10',1,6,1,'public',[T.art,T.free,T.monthly],'art','六月創作夜：驕傲月版本——「如果驕傲有顏色」','June Creative Night: Pride Month Edition — "If Pride Had a Colour"','驕傲月特別創作夜，以「如果驕傲有顏色」為主題，多種媒材自由創作，材料提供，免費。','Pride Month special creative night. Theme: "If Pride Had a Colour." Multiple mediums. Materials provided, free.'],
+[3,'2025-06-07',4,4,-1.5,'public',[T.mental,T.online,T.weekly],'ns','深夜傾訴空間：六月每週三持續開放（驕傲月特別場）','Late-Night Circle: June — Every Wednesday (Pride Month Special)','每週三晚11點深夜傾訴空間六月繼續，驕傲月可能是一個情感豐富的時節，我們都在這裡，Zoom 連結私訊索取。','Anonymous sharing circle every Wednesday at 11PM in June. Pride Month can bring up a lot — we\'re here. DM for Zoom link.'],
+[2,'2025-06-04',7,1,2.5,'public',[T.mental,T.monthly,T.free],'cns','六月心理支持小組：驕傲月特別名額','June Mental Health Group: Pride Month Special Slots','六月提供額外場次的免費線上心理支持小組，共三場，每場8人，驕傲月期間特別開放，中文進行。','Extra free online mental health group sessions in June for Pride Month: three sessions, 8 per group, conducted in Chinese.'],
+[1,'2025-06-01',0,3,-2,'public',[T.game,T.monthly,T.free],'hub','六月桌遊之夜：驕傲月開場局！','June Board Game Night: Pride Month Opening Game!','驕傲月第一個月的桌遊之夜，第三週週六晚7點，彩虹社群中心大廳，今年彩虹色桌遊特別多，免費，不需報名。','First board game night of Pride Month. Third Saturday, 7PM, Rainbow Hub. Extra rainbow-themed games this year. Free, no registration.'],
+];
+
+// Expand raw email to full object
+function expand(r){
+  const[id,date,ci,pi,rot,sens,tags,sk,tzh,ten,szh,sen]=r;
+  const s=S[sk];
+  return{id,date,color:`nc-${ci}`,pin:`pc-${pi}`,rot,sensitivity:sens,
+    ntags:tags,sender:{zh:s.zh,en:s.en},avatar:s.av,blurred:s.bl,
+    title:{zh:tzh,en:ten},summary:{zh:szh,en:sen}};
+}
+const emails=RAW.map(expand); // already newest-first
+
+// ── STATE ──
+let lang='en',dateFrom='2026-02-01',dateTo='2026-05-01',searchQuery='',activeTagFilter='';
+
+// ── HELPERS ──
+const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+function hlText(t,q){if(!q)return esc(t);return esc(t).replace(new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`,'gi'),'<mark class="hl">$1</mark>');}
+function isNew(d){return(new Date(TODAY)-new Date(d))/864e5<=NEW_DAYS;}
+
+// ── RENDER ──
+function renderNotes(){
+  const grid=document.getElementById('notes-grid');
+  grid.innerHTML='';
+  let count=0;
+  const q=searchQuery.toLowerCase().trim();
+  const atf=activeTagFilter.toLowerCase();
+
+  emails.forEach((e,idx)=>{
+    if(dateFrom&&e.date<dateFrom)return;
+    if(dateTo&&e.date>dateTo)return;
+    if(q){
+      const hay=(e.title[lang]+' '+e.summary[lang]+' '+e.sender[lang]+' '+e.ntags.map(t=>t[lang]).join(' ')).toLowerCase();
+      if(!hay.includes(q))return;
+    }
+    if(atf){
+      const s=SENS[e.sensitivity];
+      const tagTexts=(e.ntags.map(t=>t[lang]).join(' ')+' '+s[lang]).toLowerCase();
+      if(!tagTexts.includes(atf))return;
+    }
+
+    count++;
+    const s=SENS[e.sensitivity];
+    const note=document.createElement('div');
+    note.className=`note ${e.color}`;
+    note.style.cssText=`transform:rotate(${e.rot}deg);animation-delay:${Math.min(idx,12)*0.03}s`;
+    note.dataset.id=e.id;
+
+    const thtml=q?hlText(e.title[lang],q):esc(e.title[lang]);
+    const ll=lang==='zh'?'→ 查看原文':'→ View original';
+
+    note.innerHTML=`
+      <div class="pin ${e.pin}"></div>
+      ${isNew(e.date)?'<div class="new-badge">NEW</div>':''}
+      <div class="note-inner">
+        <div class="note-strip" style="background:${s.strip}"></div>
+        <div class="note-sender" style="margin-top:4px">
+          <div class="note-avatar${e.blurred?' bl':''}">${e.avatar}</div>
+          <div class="note-sender-name">${esc(e.sender[lang])}</div>
+          <div class="note-date">${fmtDate(e.date)}</div>
+        </div>
+        <div class="note-title">${thtml}</div>
+        <div class="note-tags">
+          <span class="ntag ${s.cls}${activeTagFilter===s[lang]?' af':''}" data-f="${s[lang]}">${s[lang]}</span>
+          ${e.ntags.map(t=>`<span class="ntag ${t.c}${activeTagFilter===t[lang]?' af':''}" data-f="${t[lang]}">${t[lang]}</span>`).join('')}
+        </div>
+        <div style="margin-top:6px"><a class="note-link" href="${QWAVE_URL}" target="_blank" rel="noopener" onclick="event.stopPropagation()">${ll}</a></div>
+      </div>`;
+
+    note.querySelectorAll('.ntag').forEach(tag=>{
+      tag.addEventListener('click',ev=>{ev.stopPropagation();const f=tag.dataset.f;activeTagFilter===f?clearTagFilter():setTagFilter(f);});
+    });
+    note.addEventListener('click',()=>openOverlay(e));
+    grid.appendChild(note);
+  });
+
+  const isZh=lang==='zh';
+  document.getElementById('result-count').textContent=isZh?`顯示 ${count} 則`:`${count} notes`;
+  document.getElementById('badge-count').textContent=isZh?`${count} 封`:`${count} notes`;
+  const em=document.getElementById('empty-state');
+  em.style.display=count===0?'block':'none';
+  em.textContent=isZh?'沒有符合條件的郵件 🌈':'No matching posts 🌈';
+}
+
+// ── TAG FILTER ──
+function setTagFilter(f){
+  activeTagFilter=f;
+  document.getElementById('active-filter-bar').classList.add('show');
+  document.getElementById('af-display').textContent=f;
+  document.getElementById('lbl-filtering').textContent=lang==='zh'?'篩選中':'Filtering';
+  renderNotes();
+}
+function clearTagFilter(){
+  activeTagFilter='';
+  document.getElementById('active-filter-bar').classList.remove('show');
+  renderNotes();
+}
+document.getElementById('af-clear').addEventListener('click',clearTagFilter);
+
+// ── OVERLAY ──
+const NC_BG=['#fefaef','#fde9ef','#e8f3fc','#e8f6ee','#f1eafe','#fef2e2','#fde4e4','#e2f5f6'];
+const PC_BG=['#e53935','#f57c00','#fbc02d','#388e3c','#1976d2','#7b1fa2','#c2185b','#00796b'];
+function openOverlay(e){
+  const card=document.getElementById('exp-card');
+  const ci=+e.color.replace('nc-',''),pi=+e.pin.replace('pc-','');
+  card.style.background=NC_BG[ci]||'#fefaef';
+  document.getElementById('exp-pin').style.background=PC_BG[pi]||'#e53935';
+  const s=SENS[e.sensitivity];
+  const se=document.getElementById('exp-sens');se.className=`exp-sens ntag ${s.cls}`;se.textContent=s[lang];
+  document.getElementById('exp-title').textContent=e.title[lang];
+  document.getElementById('lbl-ai').textContent='✦ '+(lang==='zh'?'AI 提煉摘要':'AI Summary');
+  document.getElementById('exp-sum').textContent=e.summary[lang];
+  const te=document.getElementById('exp-tags');
+  te.innerHTML=[{label:s[lang],cls:s.cls},...e.ntags.map(t=>({label:t[lang],cls:t.c}))].map(t=>`<span class="ntag ${t.cls}" data-f="${t.label}" title="${lang==='zh'?'點擊篩選同類':'Click to filter'}">${t.label}</span>`).join('');
+  // Click tag → close overlay + filter
+  te.querySelectorAll('.ntag').forEach(tag=>{
+    tag.addEventListener('click',()=>{
+      document.getElementById('overlay').classList.remove('open');
+      const f=tag.dataset.f;
+      if(f) setTagFilter(f);
+    });
+  });
+  document.getElementById('exp-meta').textContent=(lang==='zh'?e.sender.zh:e.sender.en)+' · '+fmtDate(e.date);
+  document.getElementById('lbl-redir').textContent=lang==='zh'?'原始郵件':'Original Post';
+  document.getElementById('exp-redir-note').textContent=s.rn[lang];
+  const btn=document.getElementById('exp-redir-btn');
+  btn.textContent=lang==='zh'?'→ 前往社群郵件列表':'→ Go to Community Mailing List';
+  btn.href=QWAVE_URL;
+  document.getElementById('overlay').classList.add('open');
+}
+document.getElementById('close-btn').addEventListener('click',()=>document.getElementById('overlay').classList.remove('open'));
+document.getElementById('overlay').addEventListener('click',ev=>{if(ev.target.id==='overlay')document.getElementById('overlay').classList.remove('open');});
+
+// ── SEARCH ──
+const si=document.getElementById('search-input'),sc=document.getElementById('search-clear'),sic=document.getElementById('search-icon');
+const hints={en:['Try: free event','Try: shelter','Try: legal aid','Try: mental health','Try: housing','Try: online','Try: workshop','Try: trans rights'],zh:['試試：免費','試試：援助','試試：聚會','試試：住宿','試試：法律','試試：心理','試試：線上','試試：跨性別']};
+let hIdx=0;
+function rotatePh(){if(!si.value){si.placeholder=hints[lang][hIdx%hints[lang].length];hIdx++;}}
+rotatePh();setInterval(rotatePh,2600);
+si.addEventListener('input',()=>{searchQuery=si.value;sc.style.display=searchQuery?'block':'none';sic.style.display=searchQuery?'none':'block';renderNotes();});
+sc.addEventListener('click',()=>{si.value='';searchQuery='';sc.style.display='none';sic.style.display='block';si.focus();renderNotes();});
+
+// ── DATE DISPLAY ──
+function syncDisp(){
+  const df=document.getElementById('date-from').value;
+  const dt=document.getElementById('date-to').value;
+  if(df)document.getElementById('disp-from').textContent=fmtDate(df);
+  if(dt)document.getElementById('disp-to').textContent=fmtDate(dt);
+}
+document.getElementById('date-from').addEventListener('change',syncDisp);
+document.getElementById('date-to').addEventListener('change',syncDisp);
+
+// ── DATE FILTER ──
+document.getElementById('btn-filter').addEventListener('click',()=>{
+  dateFrom=document.getElementById('date-from').value||null;
+  dateTo=document.getElementById('date-to').value||null;
+  renderNotes();
+});
+document.getElementById('btn-reset').addEventListener('click',()=>{
+  dateFrom='2026-02-01';dateTo='2026-05-01';
+  document.getElementById('date-from').value='2026-02-01';
+  document.getElementById('date-to').value='2026-05-01';
+  document.getElementById('disp-from').textContent='Feb 1, 2026';
+  document.getElementById('disp-to').textContent='May 1, 2026';
+  renderNotes();
+});
+
+// ── LANGUAGE ──
+const i18n={
+  en:{sub:'Community Board',dl:'Date Range',apply:'Filter',reset:'Reset',title:'Community Board',hint:'Tap tags to filter · Tap notes to expand'},
+  zh:{sub:'彩虹留言板',dl:'時間篩選',apply:'篩選',reset:'重置',title:'彩虹留言板',hint:'點標籤可篩選同類 · 點便簽看摘要'}
+};
+function updateFooter(){
+  const z=lang==='zh';
+  document.getElementById('footer-logo-en').style.display=z?'none':'block';
+  document.getElementById('footer-logo-zh').style.display=z?'block':'none';
+  document.getElementById('footer-tagline').textContent=z?'LGBTQ+ 社群郵件視覺化平台':'LGBTQ+ Community Mail Visualizer';
+  document.getElementById('footer-made-label').textContent=z?'製作人':'Created by';
+  document.getElementById('footer-quote').innerHTML=z
+    ?'"希望，永遠不會沉默。"<cite id="footer-cite">— Harvey Milk，1978</cite>'
+    :'"Hope will never be silent."<cite id="footer-cite">— Harvey Milk, 1978</cite>';
+  document.getElementById('footer-note').innerHTML=z
+    ?'郵件摘要與標籤由 <strong style="color:rgba(255,255,255,.22)">Gemini AI（Google）</strong> 自動提煉・完整原文請前往原始社群郵件列表查閱'
+    :'Summaries &amp; tags auto-extracted by <strong style="color:rgba(255,255,255,.22)">Gemini AI (Google)</strong> · Full content available in the original community mailing list';
+  const kt=document.getElementById('kofi-text');
+  if(kt) kt.textContent=z?'請我喝杯咖啡':'Buy me a coffee';
+
+  // Disclaimer link in footer
+  const dl=document.getElementById('disc-link');
+  if(dl) dl.textContent=z?'⚠️ 免責聲明':'⚠️ Disclaimer';
+
+  // Disclaimer modal
+  const dt=document.getElementById('disc-title');
+  if(dt) dt.textContent=z?'⚠️ 免責聲明':'⚠️ Disclaimer';
+  const fields=[
+    ['disc-s1',z?'關於本工具':'About This Tool'],
+    ['disc-s2',z?'AI 摘要說明':'AI Summary Notice'],
+    ['disc-s3',z?'隱私與資料處理':'Privacy & Data'],
+    ['disc-s4',z?'使用者責任':'User Responsibility'],
+    ['disc-s5',z?'維護者':'Maintainer'],
+  ];
+  fields.forEach(([id,txt])=>{const el=document.getElementById(id);if(el)el.textContent=txt;});
+  const b5=document.getElementById('disc-b5');
+  if(b5) b5.innerHTML=z
+    ?'XiaXia · ChaosXX™ · © 2026 · 獨立製作，非商業公司<br><a href="mailto:chaosxxcinema@outlook.com" style="color:rgba(232,200,122,0.7);text-decoration:underline;text-underline-offset:2px;">聯繫製作者 → chaosxxcinema@outlook.com</a>'
+    :'XiaXia · ChaosXX™ · © 2026 · Independent creator, non-commercial<br><a href="mailto:chaosxxcinema@outlook.com" style="color:rgba(232,200,122,0.7);text-decoration:underline;text-underline-offset:2px;">Contact → chaosxxcinema@outlook.com</a>';
+  const b1=document.getElementById('disc-b1');
+  if(b1) b1.innerHTML=z
+    ?'<strong>彩虹留言板（Rainbow Board）</strong> 是由獨立製作者 XiaXia（ChaosXX™）開發的社群輔助工具，非任何 LGBTQ+ 組織的官方產品。本工具不以任何形式對郵件列表的內容負責，所有原始郵件內容之著作權歸原發布者所有。'
+    :'<strong>Rainbow Board</strong> is an independently developed community tool by XiaXia (ChaosXX™). It is not an official product of any LGBTQ+ organization. The copyright of all original email content belongs to the respective authors.';
+  const b2=document.getElementById('disc-b2');
+  if(b2) b2.innerHTML=z
+    ?'本工具使用 <strong>Gemini AI（Google）</strong> 自動提煉郵件摘要與關鍵標籤。AI 生成內容可能存在誤差，不構成任何法律、醫療或心理諮詢意見。所有摘要僅供快速瀏覽參考，<strong>完整原文以郵件列表原文為準</strong>。'
+    :'This tool uses <strong>Gemini AI (Google)</strong> to auto-generate summaries and tags. AI-generated content may contain errors and does not constitute legal, medical, or psychological advice. <strong>The original mailing list post is always the authoritative source.</strong>';
+  const b3=document.getElementById('disc-b3');
+  if(b3) b3.innerHTML=z
+    ?'本工具不儲存訪客的任何個人資料，不使用 Cookie 追蹤，不向第三方出售任何資訊。標記為<strong>「敏感」「緊急」「隱私」</strong>的郵件不在公開版面顯示，僅供已訂閱社群成員透過原始郵件列表查閱。'
+    :'This tool stores no visitor personal data, uses no tracking cookies, and sells no information to third parties. Posts marked <strong>Sensitive, Urgent, or Private</strong> are not displayed publicly — they are accessible only to subscribed members via the original mailing list.';
+  const b4=document.getElementById('disc-b4');
+  if(b4) b4.innerHTML=z
+    ?'訪客使用本工具即表示了解本聲明。本工具不對因使用本平台資訊而造成的任何直接或間接損失承擔責任。如發現任何內容侵害您的權益，請聯繫製作者要求移除。<strong>緊急危機情況請直接聯繫專業支援機構，不要依賴本工具。</strong>'
+    :'By using this tool, visitors acknowledge this disclaimer. The creator is not liable for any direct or indirect losses arising from use of this platform. To request content removal, contact the creator directly. <strong>In any crisis situation, please contact professional support services directly — do not rely on this tool.</strong>';
+}
+function applyLang(){
+  const t=i18n[lang];
+  document.getElementById('logo-en').style.display=lang==='zh'?'none':'block';
+  document.getElementById('logo-zh').style.display=lang==='zh'?'block':'none';
+  document.getElementById('sub-label').textContent=t.sub;
+  document.getElementById('lbl-date').textContent=t.dl;
+  document.getElementById('btn-filter').textContent=t.apply;
+  document.getElementById('btn-reset').textContent=t.reset;
+  document.getElementById('board-title-text').textContent=t.title;
+  document.getElementById('board-hint').textContent=t.hint;
+  hIdx=0;rotatePh();
+  if(activeTagFilter){document.getElementById('lbl-filtering').textContent=lang==='zh'?'篩選中':'Filtering';}
+  activeTagFilter='';document.getElementById('active-filter-bar').classList.remove('show');
+  updateFooter();renderNotes();
+}
+document.getElementById('btn-zh').addEventListener('click',()=>{lang='zh';document.getElementById('btn-zh').classList.add('active');document.getElementById('btn-en').classList.remove('active');applyLang();});
+document.getElementById('btn-en').addEventListener('click',()=>{lang='en';document.getElementById('btn-en').classList.add('active');document.getElementById('btn-zh').classList.remove('active');applyLang();});
+
+// ── INIT ──
+renderNotes();
+updateFooter();
+</script>
+</body>
+</html>
